@@ -273,7 +273,22 @@ Proponowany zestaw widoków można rozbudować wedle uznania/potrzeb
 
 ```sql
 
--- wyniki, kod, zrzuty ekranów, komentarz ...
+#VW_RESERVATION
+create view VW_RESERVATION
+as
+select r.RESERVATION_ID, t.COUNTRY, t.TRIP_DATE, t.TRIP_NAME,
+       p.FIRSTNAME, p.LASTNAME, r.STATUS, r.TRIP_ID, r.PERSON_ID
+from RESERVATION r
+join TRIP t on t.TRIP_ID = r.TRIP_ID
+join PERSON p on p.PERSON_ID = r.PERSON_ID;
+
+#VW_TRIP
+create view VW_TRIP as
+SELECT trip.TRIP_ID, country, trip_date, trip_name, max_no_places, (max_no_places- count(reservation_id)) as no_available_places
+FROM TRIP
+INNER JOIN RESERVATION
+ON TRIP.TRIP_ID = RESERVATION.TRIP_ID
+group by TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
 
 ```
 

@@ -1,5 +1,3 @@
-
-
 # Oracle PL/Sql
 
 widoki, funkcje, procedury, triggery
@@ -33,7 +31,7 @@ Imiona i nazwiska autorów :
 
 # Tabele
 
-![](_img/ora-trip1-0.png)
+![](img/ora-trip1-0.png)
 
 
 - `Trip`  - wycieczki
@@ -243,10 +241,37 @@ w szczególności dokument: `1_modyf.pdf`
 
 
 ```sql
+#INSERT 
+insert into trip(trip_name, country, trip_date, max_no_places) 
+values ('Słoneczna Ibiza', 'Hiszpania', to_date('2024-07-10','YYYY-MM-DD'), 4);
 
--- przyklady, kod, zrzuty ekranów, komentarz ...
+#UPDATE 
+update trip
+set max_no_places=3
+where trip_id = 21
+
+#DELETE
+delete trip
+where trip_id = 4
+
+#TRANSACTIONS
+#toDo
 
 ```
+- INSERT
+![](img/insert.png)
+- UPDATE 
+![](img/update.png)
+- DELETE
+![](img/delete.png)
+- TRANSACTIONS
+	- Transakcja jest to sekwencja operacji wykonywana jako pojdeyncza jednostka "pracy"
+	- commit- potwierdza transakcje(wykonuje operacjie z których się składa)
+	- rollback- wycofuje transakcje(nie wykonuje operacji z których się składa)
+	- W razie błędu zazwyczaj transakcje zostaje przerwana, tzn. zmiany przez nią wprowadzone nie zostają zatwierdzone, również możemy takie błędy obsługiwać specjalnym blokiem EXCEPTION
+	- T-SQL vs PL/SQL 
+		- toDo
+
 
 ---
 # Zadanie 1 - widoki
@@ -273,7 +298,7 @@ Proponowany zestaw widoków można rozbudować wedle uznania/potrzeb
 
 ```sql
 
-#VW_RESERVATION
+#vw_reservation
 create view VW_RESERVATION
 as
 select r.RESERVATION_ID, t.COUNTRY, t.TRIP_DATE, t.TRIP_NAME,
@@ -282,13 +307,25 @@ from RESERVATION r
 join TRIP t on t.TRIP_ID = r.TRIP_ID
 join PERSON p on p.PERSON_ID = r.PERSON_ID;
 
-#VW_TRIP
+#vw_trip
 create view VW_TRIP as
-SELECT trip.TRIP_ID, country, trip_date, trip_name, max_no_places, (max_no_places- count(reservation_id)) as no_available_places
-FROM TRIP
-INNER JOIN RESERVATION
-ON TRIP.TRIP_ID = RESERVATION.TRIP_ID
+select trip.TRIP_ID, country, trip_date, trip_name,
+	max_no_places, 
+	(max_no_places- count(reservation_id)) as no_available_places
+from TRIP
+left join RESERVATION
+on TRIP.TRIP_ID = RESERVATION.TRIP_ID and RESERVATION.STATUS not like 'C'
 group by TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
+
+#vw_available_trip
+create or replace view VW_AVAILABLE_TRIP as
+select t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY,
+       t.MAX_NO_PLACES, (t.MAX_NO_PLACES- count(r.RESERVATION_ID)) as no_available_places
+from TRIP t
+left join RESERVATION r on t.TRIP_ID = r.TRIP_ID AND r.STATUS not like 'C'
+where t.TRIP_DATE > current_date
+having count(r.RESERVATION_ID) < t.MAX_NO_PLACES
+group by t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY, t.MAX_NO_PLACES
 
 ```
 
@@ -325,8 +362,70 @@ Proponowany zestaw funkcji można rozbudować wedle uznania/potrzeb
 # Zadanie 2  - rozwiązanie
 
 ```sql
+#f_trip_participants
+create type trip_participant as object (
+  person_id number,
+  firstname varchar2(50),
+  lastname varchar2(50)
+)
+create type TRIP_PARTICIPANTS_TABLE as table of TRIP_PARTICIPANT
 
--- wyniki, kod, zrzuty ekranów, komentarz ...
+create function f_trip_participants(tripID number )
+    return trip_participants_table
+as
+    result trip_participants_table;
+begin
+    select TRIP_PARTICIPANT(p.PERSON_ID, p.FIRSTNAME, p.LASTNAME)
+    bulk collect into result
+    from RESERVATION r
+    join PERSON p on p.PERSON_ID = r.PERSON_ID and r.STATUS not like 'C'
+    where r.TRIP_ID = tripID;
+    return result;
+end;
+
+#f_person_reservations
+create type person_reservation as object (
+    reservation_id number,
+    trip_id number,
+    person_id number,
+    status char
+)
+create type PERSON_RESERVATIONS_TABLE as table of PERSON_RESERVATION
+
+create function f_person_reservations(personID number )
+    return person_reservations_table
+as
+    result person_reservations_table;
+begin
+    select person_reservation(r.RESERVATION_ID, r.TRIP_ID, r.PERSON_ID, r.STATUS)
+    bulk collect into result
+    from RESERVATION r
+    where r.PERSON_ID = personID;
+    return result;
+end;
+
+#f_available_trips_to
+create type trip_data as object(
+    trip_id number,
+    trip_name varchar2(100),
+    country varchar2(50),
+    trip_date date,
+    max_no_places number
+)
+create type trips_table as table of TRIP_DATA
+
+create FUNCTION f_available_trips_to(country_name VARCHAR2, date_from DATE, date_to DATE)
+    RETURN trips_table
+AS
+    result trips_table;
+BEGIN
+      SELECT trip_data(t.TRIP_ID, t.TRIP_NAME, t.COUNTRY, t.TRIP_DATE, t.MAX_NO_PLACES)
+      BULK COLLECT INTO result
+      FROM TRIP t
+      WHERE t.COUNTRY LIKE country_name AND t.TRIP_DATE BETWEEN date_from AND date_to;
+
+      RETURN result;
+END;
 
 ```
 
@@ -343,7 +442,7 @@ Procedury
 	- parametry: `trip_id`, `person_id`, 
 	- procedura powinna kontrolować czy wycieczka jeszcze się nie odbyła, i czy sa wolne miejsca
 	- procedura powinna również dopisywać inf. do tabeli `log`
-- `p_modify_reservation_tatus`
+- `p_modify_reservation_status`
 	- zadaniem procedury jest zmiana statusu rezerwacji 
 	- parametry: `reservation_id`, `status` 
 	- procedura powinna kontrolować czy możliwa jest zmiana statusu, np. zmiana statusu już anulowanej wycieczki (przywrócenie do stanu aktywnego nie zawsze jest możliwa – może już nie być miejsc)
@@ -367,8 +466,37 @@ Proponowany zestaw procedur można rozbudować wedle uznania/potrzeb
 # Zadanie 3  - rozwiązanie
 
 ```sql
+#p_add_reservation
+create procedure p_add_reservation(tripID in number, personID in number)
+as
+    trip_available_places number;
+begin
+    select no_available_places into trip_available_places
+    from VW_AVAILABLE_TRIP
+    where TRIP_ID = tripID;
 
--- wyniki, kod, zrzuty ekranów, komentarz ...
+    if trip_available_places is null then
+        raise_application_error(-20001,'Trip with given ID does not exist');
+    end if;
+
+    if trip_available_places <= 0 then
+        raise_application_error(-20002,'There are no available places in trip with given ID');
+    end if;
+
+    insert into RESERVATION(reservation_id, trip_id, person_id, status)
+    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
+
+    insert into LOG(log_id, reservation_id, log_date, status)
+    values(S_LOG_SEQ.nextval,S_RESERVATION_SEQ.currval, trunc(sysdate), 'N');
+commit;
+
+exception
+    when others then
+        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
+end p_add_reservation;
+#p_modify_status
+TODO 
+
 
 ```
 

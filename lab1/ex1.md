@@ -298,7 +298,7 @@ Proponowany zestaw widoków można rozbudować wedle uznania/potrzeb
 
 ```sql
 
-#vw_reservation
+-- vw_reservation
 create view VW_RESERVATION
 as
 select r.RESERVATION_ID, t.COUNTRY, t.TRIP_DATE, t.TRIP_NAME,
@@ -307,7 +307,7 @@ from RESERVATION r
 join TRIP t on t.TRIP_ID = r.TRIP_ID
 join PERSON p on p.PERSON_ID = r.PERSON_ID;
 
-#vw_trip
+-- vw_trip
 create view VW_TRIP as
 select trip.TRIP_ID, country, trip_date, trip_name,
 	max_no_places, 
@@ -317,7 +317,7 @@ left join RESERVATION
 on TRIP.TRIP_ID = RESERVATION.TRIP_ID and RESERVATION.STATUS not like 'C'
 group by TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
 
-#vw_available_trip
+-- vw_available_trip
 create or replace view VW_AVAILABLE_TRIP as
 select t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY,
        t.MAX_NO_PLACES, (t.MAX_NO_PLACES- count(r.RESERVATION_ID)) as no_available_places
@@ -466,7 +466,7 @@ Proponowany zestaw procedur można rozbudować wedle uznania/potrzeb
 # Zadanie 3  - rozwiązanie
 
 ```sql
-#p_add_reservation
+-- p_add_reservation
 create procedure p_add_reservation(tripID in number, personID in number)
 as
     trip_available_places number;
@@ -494,13 +494,32 @@ exception
     when others then
         raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
 end p_add_reservation;
-#p_modify_status
-TODO 
+```
+```sql
+-- p_add_reservation_5
+create procedure p_add_reservation_5(tripID in number, personID in number)
+as
+    trip_available_places number;
+begin
+    select no_available_places into trip_available_places
+    from VW_AVAILABLE_TRIP
+    where TRIP_ID = tripID;
+
+    insert into RESERVATION(reservation_id, trip_id, person_id, status)
+    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
+
+    insert into LOG(log_id, reservation_id, log_date, status)
+    values(S_LOG_SEQ.nextval,S_RESERVATION_SEQ.currval, trunc(sysdate), 'N');
+commit;
+
+exception
+    when others then
+        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
+end p_add_reservation_5;
 ```
 
-
 ```sql
-#p_modify_reservation_status
+-- p_modify_reservation_status
 create PROCEDURE p_modify_reservation_status(
     p_reservation_id number,
     p_status CHAR
@@ -559,9 +578,24 @@ Należy przygotować procedury: `p_add_reservation_4`, `p_modify_reservation_sta
 # Zadanie 4  - rozwiązanie
 
 ```sql
+--t_check_availability_before_add_reservation
+CREATE TRIGGER t_before_insert_reservation
+BEFORE INSERT ON reservation
+FOR EACH ROW
+DECLARE
+    v_available_places NUMBER;
+BEGIN    SELECT no_available_places INTO v_available_places
+    FROM vw_trip
+    WHERE trip_id = :NEW.trip_id;
 
--- wyniki, kod, zrzuty ekranów, komentarz ...
+    IF v_available_places is null THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Trip with ID ' || :NEW.trip_id || ' does not exist.');
+    END IF;
 
+    IF v_available_places <= 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'No available places for trip with ID ' || :NEW.trip_id);
+    END IF;
+END;
 ```
 
 

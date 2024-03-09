@@ -497,7 +497,7 @@ end p_add_reservation;
 ```
 ```sql
 -- p_add_reservation_5
-create procedure p_add_reservation_5(tripID in number, personID in number)
+create or replace procedure p_add_reservation_5(tripID in number, personID in number)
 as
     trip_available_places number;
 begin
@@ -508,8 +508,6 @@ begin
     insert into RESERVATION(reservation_id, trip_id, person_id, status)
     values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
 
-    insert into LOG(log_id, reservation_id, log_date, status)
-    values(S_LOG_SEQ.nextval,S_RESERVATION_SEQ.currval, trunc(sysdate), 'N');
 commit;
 
 exception

@@ -516,6 +516,38 @@ exception
     when others then
         raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
 end p_add_reservation_5;
+#p_modify_max_no_places
+create or replace procedure p_modify_max_no_places(tripID in number, maxNoPlaces in number)
+as
+    trip_reserved_places number;
+    trip_exists number;
+begin
+    select TRIP_ID into trip_exists
+    from VW_TRIP
+    where TRIP_ID = tripID;
+
+    if trip_exists is null then
+        raise_application_error(-20001,'Trip with given ID does not exist');
+    end if;
+
+    select max_no_places - no_available_places into trip_reserved_places
+    from VW_TRIP
+    where TRIP_ID = tripID;
+
+    if maxNoPlaces<trip_reserved_places then
+        raise_application_error(-20002,'It is not possible to change max_no_places to value which is' ||
+                                       ' lower then current number of reserved places');
+    end if;
+
+    update TRIP
+        set MAX_NO_PLACES = maxNoPlaces
+        where TRIP_ID = tripID;
+    commit;
+
+    exception
+        when others then
+            raise_application_error(-20003, 'Error updating trip: ' || SQLERRM);
+end p_modify_max_no_places;
 ```
 
 ```sql
@@ -596,6 +628,99 @@ BEGIN    SELECT no_available_places INTO v_available_places
         RAISE_APPLICATION_ERROR(-20002, 'No available places for trip with ID ' || :NEW.trip_id);
     END IF;
 END;
+#t_log_insert
+create trigger T_LOG_INSERT
+    after insert
+    on RESERVATION
+    for each row
+begin
+    insert into LOG(log_id, reservation_id, log_date, status)
+    values(S_LOG_SEQ.nextval,:NEW.reservation_id, trunc(sysdate), 'N');
+end;
+
+#t_log_update
+create trigger T_LOG_UPDATE
+    after update
+    on RESERVATION
+    for each row
+begin
+    insert into LOG(log_id, reservation_id, log_date, status)
+    values(S_LOG_SEQ.nextval,:NEW.reservation_id, trunc(sysdate), :NEW.status);
+end;
+
+#t_reservation_delete
+create trigger t_reservation_delete
+before delete on RESERVATION
+for each row
+begin
+    RAISE_APPLICATION_ERROR(-20001, 'Cannot delete reservation.');
+end;
+
+#p_add_reservation_5
+create procedure p_add_reservation_4(tripID in number, personID in number)
+as
+    trip_available_places number;
+begin
+    select no_available_places into trip_available_places
+    from VW_AVAILABLE_TRIP
+    where TRIP_ID = tripID;
+
+    if trip_available_places is null then
+        raise_application_error(-20001,'Trip with given ID does not exist');
+    end if;
+
+    if trip_available_places <= 0 then
+        raise_application_error(-20002,'There are no available places in trip with given ID');
+    end if;
+
+    insert into RESERVATION(reservation_id, trip_id, person_id, status)
+    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
+commit;
+
+exception
+    when others then
+        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
+end p_add_reservation_4;
+
+#p_modify_reservation_status_4
+create PROCEDURE p_modify_reservation_status_4(
+    p_reservation_id number,
+    p_status CHAR
+)
+AS
+    v_trip_id number;
+    v_available number;
+    v_reservation_exists number;
+BEGIN
+    SELECT RESERVATION_ID INTO v_reservation_exists FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
+
+    IF v_reservation_exists IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Reservation does not exist.');
+    END IF;
+
+    SELECT TRIP_ID INTO v_trip_id FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
+
+    IF v_trip_id IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Trip does not exist.');
+    END IF;
+
+    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_available_trip where TRIP_ID = v_trip_id;
+
+    IF v_available = 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
+    END IF;
+
+    UPDATE RESERVATION SET STATUS = p_status WHERE RESERVATION_ID = p_reservation_id;
+
+    commit;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20003, 'No data found.');
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Error occurred' || SQLERRM);
+END;
+
 ```
 
 

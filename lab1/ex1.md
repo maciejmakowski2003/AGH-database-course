@@ -496,10 +496,42 @@ exception
 end p_add_reservation;
 #p_modify_status
 TODO 
-
-
 ```
 
+
+```sql
+#p_modify_reservation_status
+create PROCEDURE p_modify_reservation_status(
+    p_reservation_id number,
+    p_status CHAR
+)
+AS
+    v_trip_id   number;
+    v_available number;
+BEGIN
+    SELECT TRIP_ID INTO v_trip_id FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
+
+    IF v_trip_id IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Reservation does not exist.');
+    END IF;
+
+    SELECT COUNT(*) INTO v_available FROM vw_available_trip WHERE TRIP_ID = v_trip_id;
+
+    IF v_available = 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
+    ELSE
+        UPDATE RESERVATION SET STATUS = p_status WHERE RESERVATION_ID = p_reservation_id;
+
+        INSERT INTO LOG (RESERVATION_ID, LOG_DATE, STATUS)
+        VALUES (p_reservation_id, CURRENT_DATE, p_status);
+    END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20003, 'No data found.');
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Error occurred' || SQLERRM);
+END;
+```
 
 
 ---

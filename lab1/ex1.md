@@ -261,16 +261,25 @@ where trip_id = 4
 ![](img/delete.png)
 ```sql
 --TRANSACTIONS
---toDo
+BEGIN
+    SAVEPOINT sp;
+
+    INSERT INTO person (PERSON_ID, firstname, lastname)
+    VALUES (11, 'Jan', 'Owalski');
+    INSERT INTO trip (trip_name, country, trip_date, max_no_places)
+        VALUES ('Madera', 'Portugalia', TO_DATE('2026-05-01', 'YYYY-MM-DD'), 1);
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK TO SAVEPOINT sp;
+    COMMIT;
+END;
 ```
 - TRANSACTIONS
 	- Transakcja jest to sekwencja operacji wykonywana jako pojdeyncza jednostka "pracy"
 	- commit- potwierdza transakcje(wykonuje operacjie z których się składa)
 	- rollback- wycofuje transakcje(nie wykonuje operacji z których się składa)
 	- W razie błędu zazwyczaj transakcje zostaje przerwana, tzn. zmiany przez nią wprowadzone nie zostają zatwierdzone, również możemy takie błędy obsługiwać specjalnym blokiem EXCEPTION
-	- T-SQL vs PL/SQL 
-		- toDo
-
 
 ---
 # Zadanie 1 - widoki
@@ -305,6 +314,7 @@ from RESERVATION r
 join TRIP t on t.TRIP_ID = r.TRIP_ID
 join PERSON p on p.PERSON_ID = r.PERSON_ID;
 ```
+![](img/vw_reservations.png)
 ```sql
 -- vw_trip
 create view VW_TRIP as
@@ -316,6 +326,7 @@ left join RESERVATION
 on TRIP.TRIP_ID = RESERVATION.TRIP_ID and RESERVATION.STATUS not like 'C'
 group by TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
 ```
+![](img/vw_trip.png)
 ```sql
 -- vw_available_trip
 create or replace view VW_AVAILABLE_TRIP as
@@ -326,11 +337,8 @@ left join RESERVATION r on t.TRIP_ID = r.TRIP_ID AND r.STATUS not like 'C'
 where t.TRIP_DATE > current_date
 having count(r.RESERVATION_ID) < t.MAX_NO_PLACES
 group by t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY, t.MAX_NO_PLACES
-
 ```
-
-
-
+![](img/vw_available_trip.png)
 ---
 # Zadanie 2  - funkcje
 
@@ -383,6 +391,7 @@ begin
     return result;
 end;
 ```
+![](img/f_trip_participants.png)
 ```sql
 --f_person_reservations
 create type person_reservation as object (
@@ -405,6 +414,7 @@ begin
     return result;
 end;
 ```
+![](img/f_person_reservations.png)
 ```sql
 --f_available_trips_to
 create type trip_data as object(
@@ -429,8 +439,7 @@ BEGIN
       RETURN result;
 END;
 ```
-
-
+![](img/f_available_trips_to.png)
 ---
 # Zadanie 3  - procedury
 
@@ -553,9 +562,9 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001, 'Trip does not exist.');
     END IF;
 
-    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_available_trip where TRIP_ID = v_trip_id;
+    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_trip where TRIP_ID = v_trip_id;
 
-    IF v_available = 0 THEN
+    IF v_available = 0 and p_status not like 'C' THEN
         RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
     END IF;
 
@@ -633,7 +642,7 @@ end;
 
 ```sql
 --p_modify_reservation_status_4
-create PROCEDURE p_modify_reservation_status_4(
+create or replace PROCEDURE p_modify_reservation_status_4(
     p_reservation_id number,
     p_status CHAR
 )
@@ -654,14 +663,15 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001, 'Trip does not exist.');
     END IF;
 
-    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_available_trip where TRIP_ID = v_trip_id;
+    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_trip where TRIP_ID = v_trip_id;
 
-    IF v_available = 0 THEN
+    IF v_available = 0 AND p_status not like 'C' THEN
         RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
     END IF;
 
-    UPDATE RESERVATION SET STATUS = p_status WHERE RESERVATION_ID = p_reservation_id;
-
+    UPDATE RESERVATION
+    SET STATUS = p_status
+    WHERE RESERVATION_ID = p_reservation_id;
     commit;
 
 EXCEPTION
@@ -704,7 +714,7 @@ end p_add_reservation_4;
 
 Zmiana strategii kontroli dostępności miejsc. Realizacja przy pomocy triggerów
 
-Należy wprowadzić zmianę, która spowoduje, że kontrola dostępności miejsc na wycieczki (przy dodawaniu nowej rezerwacji, zmianie statusu) będzie realizowana przy pomocy trierów
+Należy wprowadzić zmianę, która spowoduje, że kontrola dostępności miejsc na wycieczki (przy dodawaniu nowej rezerwacji, zmianie statusu) będzie realizowana przy pomocy trigerów
 
 Triggery:
 - Trigger/triggery obsługujące: 
@@ -722,7 +732,7 @@ Należy przygotować procedury: `p_add_reservation_5`, `p_modify_reservation_sta
 # Zadanie 5  - rozwiązanie
 
 ```sql
---t_check_availability_before_add_reservation
+--t_before_insert_reservation
 CREATE TRIGGER t_before_insert_reservation
 BEFORE INSERT ON reservation
 FOR EACH ROW

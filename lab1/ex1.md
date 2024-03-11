@@ -241,29 +241,28 @@ w szczególności dokument: `1_modyf.pdf`
 
 
 ```sql
-#INSERT 
+--INSERT 
 insert into trip(trip_name, country, trip_date, max_no_places) 
 values ('Słoneczna Ibiza', 'Hiszpania', to_date('2024-07-10','YYYY-MM-DD'), 4);
-
-#UPDATE 
+```
+![](img/insert.png)
+```sql
+--UPDATE 
 update trip
 set max_no_places=3
 where trip_id = 21
-
-#DELETE
+```
+![](img/update.png)
+```sql
+--DELETE
 delete trip
 where trip_id = 4
-
-#TRANSACTIONS
-#toDo
-
 ```
-- INSERT
-![](img/insert.png)
-- UPDATE 
-![](img/update.png)
-- DELETE
 ![](img/delete.png)
+```sql
+--TRANSACTIONS
+--toDo
+```
 - TRANSACTIONS
 	- Transakcja jest to sekwencja operacji wykonywana jako pojdeyncza jednostka "pracy"
 	- commit- potwierdza transakcje(wykonuje operacjie z których się składa)
@@ -297,7 +296,6 @@ Proponowany zestaw widoków można rozbudować wedle uznania/potrzeb
 # Zadanie 1  - rozwiązanie
 
 ```sql
-
 -- vw_reservation
 create view VW_RESERVATION
 as
@@ -306,7 +304,8 @@ select r.RESERVATION_ID, t.COUNTRY, t.TRIP_DATE, t.TRIP_NAME,
 from RESERVATION r
 join TRIP t on t.TRIP_ID = r.TRIP_ID
 join PERSON p on p.PERSON_ID = r.PERSON_ID;
-
+```
+```sql
 -- vw_trip
 create view VW_TRIP as
 select trip.TRIP_ID, country, trip_date, trip_name,
@@ -316,7 +315,8 @@ from TRIP
 left join RESERVATION
 on TRIP.TRIP_ID = RESERVATION.TRIP_ID and RESERVATION.STATUS not like 'C'
 group by TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
-
+```
+```sql
 -- vw_available_trip
 create or replace view VW_AVAILABLE_TRIP as
 select t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY,
@@ -362,7 +362,7 @@ Proponowany zestaw funkcji można rozbudować wedle uznania/potrzeb
 # Zadanie 2  - rozwiązanie
 
 ```sql
-#f_trip_participants
+--f_trip_participants
 create type trip_participant as object (
   person_id number,
   firstname varchar2(50),
@@ -382,8 +382,9 @@ begin
     where r.TRIP_ID = tripID;
     return result;
 end;
-
-#f_person_reservations
+```
+```sql
+--f_person_reservations
 create type person_reservation as object (
     reservation_id number,
     trip_id number,
@@ -403,8 +404,9 @@ begin
     where r.PERSON_ID = personID;
     return result;
 end;
-
-#f_available_trips_to
+```
+```sql
+--f_available_trips_to
 create type trip_data as object(
     trip_id number,
     trip_name varchar2(100),
@@ -426,7 +428,6 @@ BEGIN
 
       RETURN result;
 END;
-
 ```
 
 
@@ -496,28 +497,8 @@ exception
 end p_add_reservation;
 ```
 ```sql
--- p_add_reservation_5
-create procedure p_add_reservation_5(tripID in number, personID in number)
-as
-    trip_available_places number;
-begin
-    select no_available_places into trip_available_places
-    from VW_AVAILABLE_TRIP
-    where TRIP_ID = tripID;
-
-    insert into RESERVATION(reservation_id, trip_id, person_id, status)
-    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
-
-    insert into LOG(log_id, reservation_id, log_date, status)
-    values(S_LOG_SEQ.nextval,S_RESERVATION_SEQ.currval, trunc(sysdate), 'N');
-commit;
-
-exception
-    when others then
-        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
-end p_add_reservation_5;
-#p_modify_max_no_places
-create or replace procedure p_modify_max_no_places(tripID in number, maxNoPlaces in number)
+--p_modify_max_no_places
+create procedure p_modify_max_no_places(tripID in number, maxNoPlaces in number)
 as
     trip_reserved_places number;
     trip_exists number;
@@ -549,7 +530,6 @@ begin
             raise_application_error(-20003, 'Error updating trip: ' || SQLERRM);
 end p_modify_max_no_places;
 ```
-
 ```sql
 -- p_modify_reservation_status
 create PROCEDURE p_modify_reservation_status(
@@ -557,25 +537,35 @@ create PROCEDURE p_modify_reservation_status(
     p_status CHAR
 )
 AS
-    v_trip_id   number;
+    v_trip_id number;
     v_available number;
+    v_reservation_exists number;
 BEGIN
+    SELECT RESERVATION_ID INTO v_reservation_exists FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
+
+    IF v_reservation_exists IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Reservation does not exist.');
+    END IF;
+
     SELECT TRIP_ID INTO v_trip_id FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
 
     IF v_trip_id IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Reservation does not exist.');
+        RAISE_APPLICATION_ERROR(-20001, 'Trip does not exist.');
     END IF;
 
-    SELECT COUNT(*) INTO v_available FROM vw_available_trip WHERE TRIP_ID = v_trip_id;
+    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_available_trip where TRIP_ID = v_trip_id;
 
     IF v_available = 0 THEN
         RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
-    ELSE
-        UPDATE RESERVATION SET STATUS = p_status WHERE RESERVATION_ID = p_reservation_id;
-
-        INSERT INTO LOG (RESERVATION_ID, LOG_DATE, STATUS)
-        VALUES (p_reservation_id, CURRENT_DATE, p_status);
     END IF;
+
+    UPDATE RESERVATION SET STATUS = p_status WHERE RESERVATION_ID = p_reservation_id;
+
+    INSERT INTO LOG (RESERVATION_ID, LOG_DATE, STATUS)
+    VALUES (p_reservation_id, CURRENT_DATE, p_status);
+
+    commit;
+
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20003, 'No data found.');
@@ -610,25 +600,7 @@ Należy przygotować procedury: `p_add_reservation_4`, `p_modify_reservation_sta
 # Zadanie 4  - rozwiązanie
 
 ```sql
---t_check_availability_before_add_reservation
-CREATE TRIGGER t_before_insert_reservation
-BEFORE INSERT ON reservation
-FOR EACH ROW
-DECLARE
-    v_available_places NUMBER;
-BEGIN    SELECT no_available_places INTO v_available_places
-    FROM vw_trip
-    WHERE trip_id = :NEW.trip_id;
-
-    IF v_available_places is null THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Trip with ID ' || :NEW.trip_id || ' does not exist.');
-    END IF;
-
-    IF v_available_places <= 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, 'No available places for trip with ID ' || :NEW.trip_id);
-    END IF;
-END;
-#t_log_insert
+--t_log_insert
 create trigger T_LOG_INSERT
     after insert
     on RESERVATION
@@ -637,8 +609,9 @@ begin
     insert into LOG(log_id, reservation_id, log_date, status)
     values(S_LOG_SEQ.nextval,:NEW.reservation_id, trunc(sysdate), 'N');
 end;
-
-#t_log_update
+```
+```sql
+--t_log_update
 create trigger T_LOG_UPDATE
     after update
     on RESERVATION
@@ -647,42 +620,19 @@ begin
     insert into LOG(log_id, reservation_id, log_date, status)
     values(S_LOG_SEQ.nextval,:NEW.reservation_id, trunc(sysdate), :NEW.status);
 end;
-
-#t_reservation_delete
+```
+```sql
+--t_reservation_delete
 create trigger t_reservation_delete
 before delete on RESERVATION
 for each row
 begin
     RAISE_APPLICATION_ERROR(-20001, 'Cannot delete reservation.');
 end;
+```
 
-#p_add_reservation_5
-create procedure p_add_reservation_4(tripID in number, personID in number)
-as
-    trip_available_places number;
-begin
-    select no_available_places into trip_available_places
-    from VW_AVAILABLE_TRIP
-    where TRIP_ID = tripID;
-
-    if trip_available_places is null then
-        raise_application_error(-20001,'Trip with given ID does not exist');
-    end if;
-
-    if trip_available_places <= 0 then
-        raise_application_error(-20002,'There are no available places in trip with given ID');
-    end if;
-
-    insert into RESERVATION(reservation_id, trip_id, person_id, status)
-    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
-commit;
-
-exception
-    when others then
-        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
-end p_add_reservation_4;
-
-#p_modify_reservation_status_4
+```sql
+--p_modify_reservation_status_4
 create PROCEDURE p_modify_reservation_status_4(
     p_reservation_id number,
     p_status CHAR
@@ -720,11 +670,34 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20004, 'Error occurred' || SQLERRM);
 END;
-
 ```
+```sql 
+--p_add_reservation_4
+create procedure p_add_reservation_4(tripID in number, personID in number)
+as
+    trip_available_places number;
+begin
+    select no_available_places into trip_available_places
+    from VW_AVAILABLE_TRIP
+    where TRIP_ID = tripID;
 
+    if trip_available_places is null then
+        raise_application_error(-20001,'Trip with given ID does not exist');
+    end if;
 
+    if trip_available_places <= 0 then
+        raise_application_error(-20002,'There are no available places in trip with given ID');
+    end if;
 
+    insert into RESERVATION(reservation_id, trip_id, person_id, status)
+    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
+commit;
+
+exception
+    when others then
+        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
+end p_add_reservation_4;
+```
 ---
 # Zadanie 5  - triggery
 
@@ -749,9 +722,44 @@ Należy przygotować procedury: `p_add_reservation_5`, `p_modify_reservation_sta
 # Zadanie 5  - rozwiązanie
 
 ```sql
+--t_check_availability_before_add_reservation
+CREATE TRIGGER t_before_insert_reservation
+BEFORE INSERT ON reservation
+FOR EACH ROW
+DECLARE
+    v_available_places NUMBER;
+BEGIN    
+    SELECT no_available_places INTO v_available_places
+    FROM vw_trip
+    WHERE trip_id = :NEW.trip_id;
 
--- wyniki, kod, zrzuty ekranów, komentarz ...
+    IF v_available_places is null THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Trip with ID ' || :NEW.trip_id || ' does not exist.');
+    END IF;
 
+    IF v_available_places <= 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'No available places for trip with ID ' || :NEW.trip_id);
+    END IF;
+END;
+```
+```sql
+-- p_add_reservation_5
+create procedure p_add_reservation_5(tripID in number, personID in number)
+as
+    trip_available_places number;
+begin
+    select no_available_places into trip_available_places
+    from VW_AVAILABLE_TRIP
+    where TRIP_ID = tripID;
+
+    insert into RESERVATION(reservation_id, trip_id, person_id, status)
+    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
+commit;
+
+exception
+    when others then
+        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
+end p_add_reservation_5;
 ```
 
 ---

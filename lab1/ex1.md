@@ -496,6 +496,26 @@ exception
 end p_add_reservation;
 ```
 ```sql
+-- p_add_reservation_5
+create or replace procedure p_add_reservation_5(tripID in number, personID in number)
+as
+    trip_available_places number;
+begin
+    select no_available_places into trip_available_places
+    from VW_AVAILABLE_TRIP
+    where TRIP_ID = tripID;
+
+    insert into RESERVATION(reservation_id, trip_id, person_id, status)
+    values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
+
+commit;
+
+exception
+    when others then
+        raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
+end p_add_reservation_5;
+#p_modify_max_no_places
+create or replace procedure p_modify_max_no_places(tripID in number, maxNoPlaces in number)
 --p_modify_max_no_places
 create PROCEDURE p_modify_max_no_places(tripID IN NUMBER, maxNoPlaces IN NUMBER)
 AS

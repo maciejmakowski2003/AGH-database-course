@@ -276,7 +276,7 @@ BEGIN
 END;
 ```
 - TRANSACTIONS
-	- Transakcja jest to sekwencja operacji wykonywana jako pojdeyncza jednostka "pracy"
+	- Transakcja jest to sekwencja operacji wykonywana jako pojedyncza jednostka "pracy"
 	- commit- potwierdza transakcje(wykonuje operacjie z których się składa)
 	- rollback- wycofuje transakcje(nie wykonuje operacji z których się składa)
 	- W razie błędu zazwyczaj transakcje zostaje przerwana, tzn. zmiany przez nią wprowadzone nie zostają zatwierdzone, również możemy takie błędy obsługiwać specjalnym blokiem EXCEPTION
@@ -329,14 +329,9 @@ group by TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
 ![](img/vw_trip.png)
 ```sql
 -- vw_available_trip
-create or replace view VW_AVAILABLE_TRIP as
-select t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY,
-       t.MAX_NO_PLACES, (t.MAX_NO_PLACES- count(r.RESERVATION_ID)) as no_available_places
-from TRIP t
-left join RESERVATION r on t.TRIP_ID = r.TRIP_ID AND r.STATUS not like 'C'
-where t.TRIP_DATE > current_date
-having count(r.RESERVATION_ID) < t.MAX_NO_PLACES
-group by t.TRIP_ID, t.TRIP_NAME, t.TRIP_DATE, t.COUNTRY, t.MAX_NO_PLACES
+create view VW_AVAILABLE_TRIP as
+select * from vw_trip
+where TRIP_DATE > current_date AND NO_AVAILABLE_PLACES>0;
 ```
 ![](img/vw_available_trip.png)
 ---
@@ -479,111 +474,87 @@ Proponowany zestaw procedur można rozbudować wedle uznania/potrzeb
 -- p_add_reservation
 create procedure p_add_reservation(tripID in number, personID in number)
 as
-    trip_available_places number;
+    v_available_places number;
 begin
-    select no_available_places into trip_available_places
+    select no_available_places into v_available_places
     from VW_AVAILABLE_TRIP
-    where TRIP_ID = tripID;
-
-    if trip_available_places is null then
-        raise_application_error(-20001,'Trip with given ID does not exist');
-    end if;
-
-    if trip_available_places <= 0 then
-        raise_application_error(-20002,'There are no available places in trip with given ID');
-    end if;
+    where TRIP_ID = tripID
+    GROUP BY no_available_places;
 
     insert into RESERVATION(reservation_id, trip_id, person_id, status)
     values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
 
     insert into LOG(log_id, reservation_id, log_date, status)
     values(S_LOG_SEQ.nextval,S_RESERVATION_SEQ.currval, trunc(sysdate), 'N');
-commit;
 
 exception
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Trip does not exist or ' || 
+                                        'there are not any free place');
     when others then
         raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
 end p_add_reservation;
 ```
 ```sql
 --p_modify_max_no_places
-create procedure p_modify_max_no_places(tripID in number, maxNoPlaces in number)
-as
-    trip_reserved_places number;
-    trip_exists number;
-begin
-    select TRIP_ID into trip_exists
-    from VW_TRIP
-    where TRIP_ID = tripID;
+create PROCEDURE p_modify_max_no_places(tripID IN NUMBER, maxNoPlaces IN NUMBER)
+AS
+    v_reserved_places NUMBER;
+BEGIN
+    SELECT MAX_NO_PLACES - NO_AVAILABLE_PLACES INTO v_reserved_places
+    FROM VW_TRIP
+    WHERE TRIP_ID = tripID;
 
-    if trip_exists is null then
-        raise_application_error(-20001,'Trip with given ID does not exist');
-    end if;
+    IF maxNoPlaces < v_reserved_places THEN
+        RAISE_APPLICATION_ERROR(-20002, 'It is not possible to change max_no_places to a value lower than the current number of reserved places');
+    END IF;
 
-    select max_no_places - no_available_places into trip_reserved_places
-    from VW_TRIP
-    where TRIP_ID = tripID;
+    UPDATE TRIP
+    SET MAX_NO_PLACES = maxNoPlaces
+    WHERE TRIP_ID = tripID;
 
-    if maxNoPlaces<trip_reserved_places then
-        raise_application_error(-20002,'It is not possible to change max_no_places to value which is' ||
-                                       ' lower then current number of reserved places');
-    end if;
-
-    update TRIP
-        set MAX_NO_PLACES = maxNoPlaces
-        where TRIP_ID = tripID;
-    commit;
-
-    exception
-        when others then
-            raise_application_error(-20003, 'Error updating trip: ' || SQLERRM);
-end p_modify_max_no_places;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Trip does not exist');
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Error updating trip: ' || SQLERRM);
+END p_modify_max_no_places;
 ```
 ```sql
 -- p_modify_reservation_status
 create PROCEDURE p_modify_reservation_status(
-    p_reservation_id number,
+    p_reservation_id NUMBER,
     p_status CHAR
 )
 AS
-    v_trip_id number;
-    v_available number;
-    v_reservation_exists number;
+    v_available_places NUMBER;
+    v_trip_id NUMBER;
+    v_current_status CHAR;
 BEGIN
-    SELECT RESERVATION_ID INTO v_reservation_exists FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
+    SELECT TRIP_ID, STATUS INTO v_trip_id, v_current_status
+    FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id
+    GROUP BY TRIP_ID, STATUS;
 
-    IF v_reservation_exists IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20003, 'Reservation does not exist.');
+    SELECT NO_AVAILABLE_PLACES INTO v_available_places
+    FROM vw_trip WHERE TRIP_ID = v_trip_id;
+
+    IF v_available_places = 0 AND v_current_status = 'C' AND p_status != 'C' THEN
+        RAISE_APPLICATION_ERROR(-20003, 'It is not possible to change status to a value other than ''C'' when no available places are left.');
     END IF;
 
-    SELECT TRIP_ID INTO v_trip_id FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
-
-    IF v_trip_id IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Trip does not exist.');
-    END IF;
-
-    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_trip where TRIP_ID = v_trip_id;
-
-    IF v_available = 0 and p_status not like 'C' THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
-    END IF;
-
-    UPDATE RESERVATION SET STATUS = p_status WHERE RESERVATION_ID = p_reservation_id;
+    UPDATE RESERVATION SET STATUS = p_status
+    WHERE RESERVATION_ID = p_reservation_id;
 
     INSERT INTO LOG (RESERVATION_ID, LOG_DATE, STATUS)
-    VALUES (p_reservation_id, CURRENT_DATE, p_status);
-
-    commit;
+    VALUES (p_reservation_id, SYSDATE, p_status);
 
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20003, 'No data found.');
+        RAISE_APPLICATION_ERROR(-20004, 'Trip or reservation does not exist.');
     WHEN OTHERS THEN
-        RAISE_APPLICATION_ERROR(-20004, 'Error occurred' || SQLERRM);
-END;
+        RAISE_APPLICATION_ERROR(-20005, 'An error occurred: ' || SQLERRM);
+END p_modify_reservation_status;
 ```
-
-
 ---
 # Zadanie 4  - triggery
 
@@ -642,68 +613,55 @@ end;
 
 ```sql
 --p_modify_reservation_status_4
-create or replace PROCEDURE p_modify_reservation_status_4(
-    p_reservation_id number,
+create PROCEDURE p_modify_reservation_status_4(
+    p_reservation_id NUMBER,
     p_status CHAR
 )
 AS
-    v_trip_id number;
-    v_available number;
-    v_reservation_exists number;
+    v_available_places NUMBER;
+    v_trip_id NUMBER;
+    v_current_status CHAR;
 BEGIN
-    SELECT RESERVATION_ID INTO v_reservation_exists FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
+    SELECT TRIP_ID, STATUS INTO v_trip_id, v_current_status
+    FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id
+    GROUP BY TRIP_ID, STATUS;
 
-    IF v_reservation_exists IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20003, 'Reservation does not exist.');
+    SELECT NO_AVAILABLE_PLACES INTO v_available_places
+    FROM vw_trip WHERE TRIP_ID = v_trip_id;
+
+    IF v_available_places = 0 AND v_current_status = 'C' AND p_status != 'C' THEN
+        RAISE_APPLICATION_ERROR(-20003, 'It is not possible to change status to a value other'
+                                || 'than ''C'' when no available places are left.');
     END IF;
 
-    SELECT TRIP_ID INTO v_trip_id FROM RESERVATION WHERE RESERVATION_ID = p_reservation_id;
-
-    IF v_trip_id IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Trip does not exist.');
-    END IF;
-
-    SELECT NO_AVAILABLE_PLACES INTO v_available FROM vw_trip where TRIP_ID = v_trip_id;
-
-    IF v_available = 0 AND p_status not like 'C' THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Cannot change status of reservation. Trip is not available.');
-    END IF;
-
-    UPDATE RESERVATION
-    SET STATUS = p_status
+    UPDATE RESERVATION SET STATUS = p_status
     WHERE RESERVATION_ID = p_reservation_id;
-    commit;
 
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        RAISE_APPLICATION_ERROR(-20003, 'No data found.');
+        RAISE_APPLICATION_ERROR(-20004, 'Trip or reservation does not exist.');
     WHEN OTHERS THEN
-        RAISE_APPLICATION_ERROR(-20004, 'Error occurred' || SQLERRM);
-END;
+        RAISE_APPLICATION_ERROR(-20005, 'An error occurred: ' || SQLERRM);
+END p_modify_reservation_status_4;
 ```
 ```sql 
 --p_add_reservation_4
 create procedure p_add_reservation_4(tripID in number, personID in number)
 as
-    trip_available_places number;
+    v_available_places number;
 begin
-    select no_available_places into trip_available_places
+    select no_available_places into v_available_places
     from VW_AVAILABLE_TRIP
-    where TRIP_ID = tripID;
-
-    if trip_available_places is null then
-        raise_application_error(-20001,'Trip with given ID does not exist');
-    end if;
-
-    if trip_available_places <= 0 then
-        raise_application_error(-20002,'There are no available places in trip with given ID');
-    end if;
+    where TRIP_ID = tripID
+    GROUP BY no_available_places;
 
     insert into RESERVATION(reservation_id, trip_id, person_id, status)
     values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
-commit;
 
 exception
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Trip does not exist or ' || 
+                                        'there are not any free place');
     when others then
         raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
 end p_add_reservation_4;
@@ -733,43 +691,92 @@ Należy przygotować procedury: `p_add_reservation_5`, `p_modify_reservation_sta
 
 ```sql
 --t_before_insert_reservation
-CREATE TRIGGER t_before_insert_reservation
-BEFORE INSERT ON reservation
-FOR EACH ROW
+create trigger T_BEFORE_INSERT_RESERVATION
+    before insert
+    on RESERVATION
+    for each row
 DECLARE
     v_available_places NUMBER;
-BEGIN    
+BEGIN
     SELECT no_available_places INTO v_available_places
-    FROM vw_trip
+    FROM VW_AVAILABLE_TRIP
     WHERE trip_id = :NEW.trip_id;
-
-    IF v_available_places is null THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Trip with ID ' || :NEW.trip_id || ' does not exist.');
-    END IF;
-
-    IF v_available_places <= 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, 'No available places for trip with ID ' || :NEW.trip_id);
-    END IF;
 END;
+```
+```sql
+--T_COMPOUND_BEFORE_UPDATE_RESERVATION
+CREATE OR REPLACE TRIGGER T_COMPOUND_BEFORE_UPDATE_RESERVATION
+FOR UPDATE ON RESERVATION
+COMPOUND TRIGGER
+
+    TYPE UPDATE_RESERVATION_STATUS_TABLE IS TABLE OF UPDATE_RESERVATION_STATUS;
+    v_reservation_table UPDATE_RESERVATION_STATUS_TABLE := UPDATE_RESERVATION_STATUS_TABLE();
+    is_available NUMBER;
+
+    BEFORE EACH ROW IS
+    BEGIN
+        v_reservation_table.EXTEND();
+        v_reservation_table(v_reservation_table.LAST) :=
+            UPDATE_RESERVATION_STATUS(:NEW.RESERVATION_ID, :NEW.TRIP_ID, :OLD.STATUS, :NEW.STATUS);
+    END BEFORE EACH ROW;
+
+    AFTER STATEMENT IS
+    BEGIN
+        FOR i IN 1..v_reservation_table.COUNT LOOP
+            SELECT NO_AVAILABLE_PLACES INTO is_available FROM VW_TRIP
+            WHERE TRIP_ID = v_reservation_table(i).TRIP_ID;
+
+            IF is_available <= 0 AND v_reservation_table(i).OLD_STATUS = 'C' AND v_reservation_table(i).STATUS != 'C' THEN
+                RAISE_APPLICATION_ERROR(-20001,'It is not possible to change status to a value other than ''C'' when no available places are left.');
+            END IF;
+        END LOOP;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20004, 'Trip or reservation does not exist.');
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20005, 'An error occurred: ' || SQLERRM);
+    END AFTER STATEMENT;
+
+END T_COMPOUND_BEFORE_UPDATE_RESERVATION;
+
 ```
 ```sql
 -- p_add_reservation_5
 create procedure p_add_reservation_5(tripID in number, personID in number)
 as
-    trip_available_places number;
 begin
-    select no_available_places into trip_available_places
-    from VW_AVAILABLE_TRIP
-    where TRIP_ID = tripID;
-
     insert into RESERVATION(reservation_id, trip_id, person_id, status)
     values (S_RESERVATION_SEQ.nextval, tripID, personID, 'N');
-commit;
-
 exception
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Trip does not exist or ' ||
+                                        'there are not any free place');
     when others then
         raise_application_error(-20003, 'Error inserting reservation: ' || SQLERRM);
 end p_add_reservation_5;
+```
+```sql
+--p_modify_reservation_status_5
+create PROCEDURE p_modify_reservation_status_5(
+    p_reservation_id NUMBER,
+    p_status CHAR
+)
+AS
+    v_reservation_exist number;
+BEGIN
+
+    SELECT RESERVATION_ID INTO v_reservation_exist
+    FROM RESERVATION WHERE RESERVATION_ID=p_reservation_id;
+
+    UPDATE RESERVATION SET STATUS = p_status
+    WHERE RESERVATION_ID = p_reservation_id;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Trip or reservation does not exist.');
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20005, 'An error occurred: ' || SQLERRM);
+END p_modify_reservation_status_5;
 ```
 
 ---
@@ -865,8 +872,36 @@ Należy stworzyć nowe wersje tych widoków/procedur/triggerów (np. dodając do
 
 Porównaj sposób programowania w systemie Oracle PL/SQL ze znanym ci systemem/językiem MS Sqlserver T-SQL
 
-```sql
+1. Trudność
+    - PL/SQL - bardziej złozony
+    - T-SQL - stosunkowo prosty
 
--- komentarz ...
-
-```
+2. Składnia:
+    - PL/SQL: bardziej deklaratywne podejście
+    - T-SQL: bardziej proceduralne podejście
+    w T-SQL trzeba teoretycznie napisać więcej kodu, zeby osiągnąć to samo co w PL/SQL
+    T-SQL uznawany za prostszy dla początkujących
+3. Typy danych i zmienne
+    - typ ```money``` jest w T-SQL, brak w PL/SQL
+    - PL/SQL pozwala na definiowane typów danych uzytkownika, T-SQL tego nie zapewnia
+    - T-SQL ma opcję korzystania z tymczasowej tabeli, PL/SQL tego nie ma
+4. Trigery
+    - PL/SQL: mogą być definiowane jako triger wierszowy (FOR EACH ROW) lub triger zbiorowy (FOR EACH STATEMENT).
+    - T-SQL: triger jest zawsze trigerem wierszowym i wykonuje się dla każdej zmiany wiersza, którą obejmuje.
+5. Struktura bloków
+    - PL/SQL: zaczynają się od słowa kluczowego DECLARE i kończą na słowie kluczowym END.
+    - T-SQL:  zaczynają się od BEGIN i kończą na END.
+6. Dostęp do zmiennych specjalnych:
+    - PL/SQL: można korzystać ze zmiennych specjalnych, takich jak :NEW i :OLD, aby uzyskać dostęp do nowych i starych wartości wierszy.
+    - T-SQL: dostęp do nowych i starych wartości wierszy odbywa się za pomocą pseudo-tabeli INSERTED i DELETED.
+7. Commitowanie
+    - PL/SQL: mozna uzyc AUTOCOMMIT
+    - T-SQL: brak komendy AUTOCOMMIT, trzeba manualnie commitować kazda transakcję
+8. Gorsza osługa stringów w PL/SQL niz T-SQL
+9. Lepsza obsługa zmiennych date/time w PL/SQL niz w T-SQL
+10. Performance:
+    - PL/SQL: szybszy czas wykonania złozonych zapytań, wydajniejszy przy większych ilościach danych
+    - T-SQL: bardziej ograniczone uzycie pamięci systemowej (moze to sprawiac problemy przy pracy z większymi ilościami danych)
+11. Obsługa błędów
+    - PL/SQL: W PL/SQL można definiować obsługę błędów za pomocą bloków EXCEPTION.
+    - T-SQL: W T-SQL obsługę błędów można zdefiniować za pomocą bloku TRY...CATCH.

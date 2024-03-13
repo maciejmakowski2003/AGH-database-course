@@ -885,8 +885,36 @@ Należy stworzyć nowe wersje tych widoków/procedur/triggerów (np. dodając do
 
 Porównaj sposób programowania w systemie Oracle PL/SQL ze znanym ci systemem/językiem MS Sqlserver T-SQL
 
-```sql
+1. Trudność
+    - PL/SQL - bardziej złozony
+    - T-SQL - stosunkowo prosty
 
--- komentarz ...
-
-```
+2. Składnia:
+    - PL/SQL: bardziej deklaratywne podejście
+    - T-SQL: bardziej proceduralne podejście
+    w T-SQL trzeba teoretycznie napisać więcej kodu, zeby osiągnąć to samo co w PL/SQL
+    T-SQL uznawany za prostszy dla początkujących
+3. Typy danych i zmienne
+    - typ ```money``` jest w T-SQL, brak w PL/SQL
+    - PL/SQL pozwala na definiowane typów danych uzytkownika, T-SQL tego nie zapewnia
+    - T-SQL ma opcję korzystania z tymczasowej tabeli, PL/SQL tego nie ma
+4. Trigery
+    - PL/SQL: mogą być definiowane jako triger wierszowy (FOR EACH ROW) lub triger zbiorowy (FOR EACH STATEMENT).
+    - T-SQL: triger jest zawsze trigerem wierszowym i wykonuje się dla każdej zmiany wiersza, którą obejmuje.
+5. Struktura bloków
+    - PL/SQL: zaczynają się od słowa kluczowego DECLARE i kończą na słowie kluczowym END.
+    - T-SQL:  zaczynają się od BEGIN i kończą na END.
+6. Dostęp do zmiennych specjalnych:
+    - PL/SQL: można korzystać ze zmiennych specjalnych, takich jak :NEW i :OLD, aby uzyskać dostęp do nowych i starych wartości wierszy.
+    - T-SQL: dostęp do nowych i starych wartości wierszy odbywa się za pomocą pseudo-tabeli INSERTED i DELETED.
+7. Commitowanie
+    - PL/SQL: mozna uzyc AUTOCOMMIT
+    - T-SQL: brak komendy AUTOCOMMIT, trzeba manualnie commitować kazda transakcję
+8. Gorsza osługa stringów w PL/SQL niz T-SQL
+9. Lepsza obsługa zmiennych date/time w PL/SQL niz w T-SQL
+10. Performance:
+    - PL/SQL: szybszy czas wykonania złozonych zapytań, wydajniejszy przy większych ilościach danych
+    - T-SQL: bardziej ograniczone uzycie pamięci systemowej (moze to sprawiac problemy przy pracy z większymi ilościami danych)
+11. Obsługa błędów
+    - PL/SQL: W PL/SQL można definiować obsługę błędów za pomocą bloków EXCEPTION.
+    - T-SQL: W T-SQL obsługę błędów można zdefiniować za pomocą bloku TRY...CATCH.

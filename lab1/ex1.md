@@ -1081,7 +1081,6 @@ Porównaj sposób programowania w systemie Oracle PL/SQL ze znanym ci systemem/j
 2. Składnia:
     - PL/SQL: bardziej deklaratywne podejście
     - T-SQL: bardziej proceduralne podejście
-    w T-SQL trzeba teoretycznie napisać więcej kodu, zeby osiągnąć to samo co w PL/SQL
     T-SQL uznawany za prostszy dla początkujących
 3. Typy danych i zmienne
     - typ ```money``` jest w T-SQL, brak w PL/SQL

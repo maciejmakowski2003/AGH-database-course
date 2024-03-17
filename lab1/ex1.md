@@ -918,3 +918,6 @@ Porównaj sposób programowania w systemie Oracle PL/SQL ze znanym ci systemem/j
 11. Obsługa błędów
     - PL/SQL: W PL/SQL można definiować obsługę błędów za pomocą bloków EXCEPTION.
     - T-SQL: W T-SQL obsługę błędów można zdefiniować za pomocą bloku TRY...CATCH.
+
+Wnioski: Język PSL/SQL pozwala na więcej szczegółowości podczas pisania kodu w stosunku do T-SQL. Technologia pochodząca od Oracle pozwala takze na wykonanie wielu deklaracji SQL na raz po zamknięciu ich w bloku.
+PL/SQL posiada równiez dobre wsparcie obsługi błędów. Jego składnia moze być jednak na początku trochę trudniejsza w przyswajaniu jego zawiłości.

@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Oracle PL&sol;Sql</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="oracle-plsql">Oracle PL/Sql</h1>
+<p>widoki, funkcje, procedury, triggery
+ćwiczenie</p>
+<hr>
+<p>Imiona i nazwiska autorów :</p>
+<ul>
+<li>Maciej Makowski</li>
+<li>Franciszek Job</li>
+</ul>
+<hr>
+<style>
+  {
+    font-size: 16pt;
+  }
+</style> 
+<style scoped>
+ li, p {
+    font-size: 14pt;
+  }
+</style> 
+<style scoped>
+ pre {
+    font-size: 10pt;
+  }
+</style> 
+<h1 id="tabele">Tabele</h1>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\ora-trip1-0.png" alt=""></p>
+<ul>
+<li>
+<p><code>Trip</code>  - wycieczki</p>
+<ul>
+<li><code>trip_id</code> - identyfikator, klucz główny</li>
+<li><code>trip_name</code> - nazwa wycieczki</li>
+<li><code>country</code> - nazwa kraju</li>
+<li><code>trip_date</code> - data</li>
+<li><code>max_no_places</code> -  maksymalna liczba miejsc na wycieczkę</li>
+</ul>
+</li>
+<li>
+<p><code>Person</code> - osoby</p>
+<ul>
+<li><code>person_id</code> - identyfikator, klucz główny</li>
+<li><code>firstname</code> - imię</li>
+<li><code>lastname</code> - nazwisko</li>
+</ul>
+</li>
+<li>
+<p><code>Reservation</code>  - rezerwacje</p>
+<ul>
+<li><code>reservation_id</code> - identyfikator, klucz główny</li>
+<li><code>trip_id</code> - identyfikator wycieczki</li>
+<li><code>person_id</code> - identyfikator osoby</li>
+<li><code>status</code> - status rezerwacji
+<ul>
+<li><code>N</code> – New - Nowa</li>
+<li><code>P</code> – Confirmed and Paid – Potwierdzona  i zapłacona</li>
+<li><code>C</code> – Canceled - Anulowana</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><code>Log</code> - dziennik zmian statusów rezerwacji</p>
+<ul>
+<li><code>log_id</code> - identyfikator, klucz główny</li>
+<li><code>reservation_id</code> - identyfikator rezerwacji</li>
+<li><code>log_date</code> - data zmiany</li>
+<li><code>status</code> - status</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-sql"><span class="hljs-keyword">create</span> sequence s_person_seq  
+   <span class="hljs-keyword">start</span> <span class="hljs-keyword">with</span> <span class="hljs-number">1</span>  
+   increment <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>;
+
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">table</span> person  
+(  
+  person_id <span class="hljs-type">int</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">null</span>
+      <span class="hljs-keyword">constraint</span> pk_person  
+         <span class="hljs-keyword">primary</span> key,
+  firstname <span class="hljs-type">varchar</span>(<span class="hljs-number">50</span>),  
+  lastname <span class="hljs-type">varchar</span>(<span class="hljs-number">50</span>)
+)  
+
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> person  
+    modify person_id <span class="hljs-type">int</span> <span class="hljs-keyword">default</span> s_person_seq.nextval;
+   
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-keyword">create</span> sequence s_trip_seq  
+   <span class="hljs-keyword">start</span> <span class="hljs-keyword">with</span> <span class="hljs-number">1</span>  
+   increment <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>;
+
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">table</span> trip  
+(  
+  trip_id <span class="hljs-type">int</span>  <span class="hljs-keyword">not</span> <span class="hljs-keyword">null</span>
+     <span class="hljs-keyword">constraint</span> pk_trip  
+         <span class="hljs-keyword">primary</span> key, 
+  trip_name <span class="hljs-type">varchar</span>(<span class="hljs-number">100</span>),  
+  country <span class="hljs-type">varchar</span>(<span class="hljs-number">50</span>),  
+  trip_date <span class="hljs-type">date</span>,  
+  max_no_places <span class="hljs-type">int</span>
+)  
+
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> trip 
+    modify trip_id <span class="hljs-type">int</span> <span class="hljs-keyword">default</span> s_trip_seq.nextval;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-keyword">create</span> sequence s_reservation_seq  
+   <span class="hljs-keyword">start</span> <span class="hljs-keyword">with</span> <span class="hljs-number">1</span>  
+   increment <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>;
+
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">table</span> reservation  
+(  
+  reservation_id <span class="hljs-type">int</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">null</span>
+      <span class="hljs-keyword">constraint</span> pk_reservation  
+         <span class="hljs-keyword">primary</span> key, 
+  trip_id <span class="hljs-type">int</span>,  
+  person_id <span class="hljs-type">int</span>,  
+  status <span class="hljs-type">char</span>(<span class="hljs-number">1</span>)
+)  
+
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> reservation 
+    modify reservation_id <span class="hljs-type">int</span> <span class="hljs-keyword">default</span> s_reservation_seq.nextval;
+
+
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> reservation  
+<span class="hljs-keyword">add</span> <span class="hljs-keyword">constraint</span> reservation_fk1 <span class="hljs-keyword">foreign</span> key  
+( person_id ) <span class="hljs-keyword">references</span> person ( person_id ); 
+  
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> reservation  
+<span class="hljs-keyword">add</span> <span class="hljs-keyword">constraint</span> reservation_fk2 <span class="hljs-keyword">foreign</span> key  
+( trip_id ) <span class="hljs-keyword">references</span> trip ( trip_id );  
+  
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> reservation  
+<span class="hljs-keyword">add</span> <span class="hljs-keyword">constraint</span> reservation_chk1 <span class="hljs-keyword">check</span>  
+(status <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;N&#x27;</span>,<span class="hljs-string">&#x27;P&#x27;</span>,<span class="hljs-string">&#x27;C&#x27;</span>));
+
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-keyword">create</span> sequence s_log_seq  
+   <span class="hljs-keyword">start</span> <span class="hljs-keyword">with</span> <span class="hljs-number">1</span>  
+   increment <span class="hljs-keyword">by</span> <span class="hljs-number">1</span>;
+
+
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">table</span> <span class="hljs-built_in">log</span>  
+(  
+    log_id <span class="hljs-type">int</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">null</span>
+         <span class="hljs-keyword">constraint</span> pk_log  
+         <span class="hljs-keyword">primary</span> key,
+    reservation_id <span class="hljs-type">int</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">null</span>,  
+    log_date datetime  <span class="hljs-keyword">not</span> <span class="hljs-keyword">null</span>,  
+    status <span class="hljs-type">char</span>(<span class="hljs-number">1</span>)
+);  
+
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> log 
+    modify log_id <span class="hljs-type">int</span> <span class="hljs-keyword">default</span> s_log_seq.nextval;
+  
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> log  
+<span class="hljs-keyword">add</span> <span class="hljs-keyword">constraint</span> log_chk1 <span class="hljs-keyword">check</span>  
+(status <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;N&#x27;</span>,<span class="hljs-string">&#x27;P&#x27;</span>,<span class="hljs-string">&#x27;C&#x27;</span>)) enable;
+  
+<span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> log  
+<span class="hljs-keyword">add</span> <span class="hljs-keyword">constraint</span> log_fk1 <span class="hljs-keyword">foreign</span> key  
+( reservation_id ) <span class="hljs-keyword">references</span> reservation ( reservation_id );
+</code></pre>
+<hr>
+<h1 id="dane">Dane</h1>
+<p>Należy wypełnić  tabele przykładowymi danymi</p>
+<ul>
+<li>4 wycieczki</li>
+<li>10 osób</li>
+<li>10  rezerwacji</li>
+</ul>
+<p>Dane testowe powinny być różnorodne (wycieczki w przyszłości, wycieczki w przeszłości, rezerwacje o różnym statusie itp.) tak, żeby umożliwić testowanie napisanych procedur.</p>
+<p>W razie potrzeby należy zmodyfikować dane tak żeby przetestować różne przypadki.</p>
+<pre><code class="language-sql"><span class="hljs-comment">-- trip</span>
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> trip(trip_name, country, trip_date, max_no_places)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Wycieczka do Paryza&#x27;</span>, <span class="hljs-string">&#x27;Francja&#x27;</span>, to_date(<span class="hljs-string">&#x27;2023-09-12&#x27;</span>, <span class="hljs-string">&#x27;YYYY-MM-DD&#x27;</span>), <span class="hljs-number">3</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> trip(trip_name, country, trip_date,  max_no_places)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Piekny Krakow&#x27;</span>, <span class="hljs-string">&#x27;Polska&#x27;</span>, to_date(<span class="hljs-string">&#x27;2025-05-03&#x27;</span>,<span class="hljs-string">&#x27;YYYY-MM-DD&#x27;</span>), <span class="hljs-number">2</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> trip(trip_name, country, trip_date,  max_no_places)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Znow do Francji&#x27;</span>, <span class="hljs-string">&#x27;Francja&#x27;</span>, to_date(<span class="hljs-string">&#x27;2025-05-01&#x27;</span>,<span class="hljs-string">&#x27;YYYY-MM-DD&#x27;</span>), <span class="hljs-number">2</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> trip(trip_name, country, trip_date,  max_no_places)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Hel&#x27;</span>, <span class="hljs-string">&#x27;Polska&#x27;</span>, to_date(<span class="hljs-string">&#x27;2025-05-01&#x27;</span>,<span class="hljs-string">&#x27;YYYY-MM-DD&#x27;</span>),  <span class="hljs-number">2</span>);
+
+<span class="hljs-comment">-- person</span>
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> person(firstname, lastname)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Jan&#x27;</span>, <span class="hljs-string">&#x27;Nowak&#x27;</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> person(firstname, lastname)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Jan&#x27;</span>, <span class="hljs-string">&#x27;Kowalski&#x27;</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> person(firstname, lastname)  
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Jan&#x27;</span>, <span class="hljs-string">&#x27;Nowakowski&#x27;</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> person(firstname, lastname)  
+<span class="hljs-keyword">values</span>  (<span class="hljs-string">&#x27;Novak&#x27;</span>, <span class="hljs-string">&#x27;Nowak&#x27;</span>);
+
+<span class="hljs-comment">-- reservation</span>
+<span class="hljs-comment">-- trip1</span>
+<span class="hljs-keyword">insert</span>  <span class="hljs-keyword">into</span> reservation(trip_id, person_id, status)  
+<span class="hljs-keyword">values</span> (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-string">&#x27;P&#x27;</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> reservation(trip_id, person_id, status)  
+<span class="hljs-keyword">values</span> (<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-string">&#x27;N&#x27;</span>);  
+  
+<span class="hljs-comment">-- trip 2  </span>
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> reservation(trip_id, person_id, status)  
+<span class="hljs-keyword">values</span> (<span class="hljs-number">2</span>, <span class="hljs-number">1</span>, <span class="hljs-string">&#x27;P&#x27;</span>);  
+  
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> reservation(trip_id, person_id, status)  
+<span class="hljs-keyword">values</span> (<span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-string">&#x27;C&#x27;</span>);  
+  
+<span class="hljs-comment">-- trip 3  </span>
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> reservation(trip_id, person_id, status)  
+<span class="hljs-keyword">values</span> (<span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-string">&#x27;P&#x27;</span>);
+</code></pre>
+<hr>
+<h1 id="zadanie-0---modyfikacja-danych-transakcje">Zadanie 0 - modyfikacja danych, transakcje</h1>
+<p>Należy przeprowadzić kilka eksperymentów związanych ze wstawianiem, modyfikacją i usuwaniem danych
+oraz wykorzystaniem transakcji</p>
+<p>Skomentuj dzialanie transakcji. Jak działa polecenie <code>commit</code>, <code>rollback</code>?.
+Co się dzieje w przypadku wystąpienia błędów podczas wykonywania transakcji? Porównaj sposób programowania operacji wykorzystujących transakcje w Oracle PL/SQL ze znanym ci systemem/językiem MS Sqlserver T-SQL</p>
+<p>pomocne mogą być materiały dostępne tu:
+<a href="https://upel.agh.edu.pl/mod/folder/view.php?id=214774">https://upel.agh.edu.pl/mod/folder/view.php?id=214774</a>
+w szczególności dokument: <code>1_modyf.pdf</code></p>
+<pre><code class="language-sql"><span class="hljs-comment">--INSERT </span>
+<span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> trip(trip_name, country, trip_date, max_no_places) 
+<span class="hljs-keyword">values</span> (<span class="hljs-string">&#x27;Słoneczna Ibiza&#x27;</span>, <span class="hljs-string">&#x27;Hiszpania&#x27;</span>, to_date(<span class="hljs-string">&#x27;2024-07-10&#x27;</span>,<span class="hljs-string">&#x27;YYYY-MM-DD&#x27;</span>), <span class="hljs-number">4</span>);
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\insert.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--UPDATE </span>
+<span class="hljs-keyword">update</span> trip
+<span class="hljs-keyword">set</span> max_no_places<span class="hljs-operator">=</span><span class="hljs-number">3</span>
+<span class="hljs-keyword">where</span> trip_id <span class="hljs-operator">=</span> <span class="hljs-number">21</span>
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\update.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--DELETE</span>
+<span class="hljs-keyword">delete</span> trip
+<span class="hljs-keyword">where</span> trip_id <span class="hljs-operator">=</span> <span class="hljs-number">4</span>
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\delete.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--TRANSACTIONS</span>
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SAVEPOINT</span> sp;
+
+    <span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> person (PERSON_ID, firstname, lastname)
+    <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">11</span>, <span class="hljs-string">&#x27;Jan&#x27;</span>, <span class="hljs-string">&#x27;Owalski&#x27;</span>);
+    <span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> trip (trip_name, country, trip_date, max_no_places)
+        <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">&#x27;Madera&#x27;</span>, <span class="hljs-string">&#x27;Portugalia&#x27;</span>, TO_DATE(<span class="hljs-string">&#x27;2026-05-01&#x27;</span>, <span class="hljs-string">&#x27;YYYY-MM-DD&#x27;</span>), <span class="hljs-number">1</span>);
+
+    EXCEPTION
+        <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+            <span class="hljs-keyword">ROLLBACK</span> <span class="hljs-keyword">TO</span> <span class="hljs-keyword">SAVEPOINT</span> sp;
+    <span class="hljs-keyword">COMMIT</span>;
+<span class="hljs-keyword">END</span>;
+</code></pre>
+<ul>
+<li>TRANSACTIONS
+<ul>
+<li>Transakcja jest to sekwencja operacji wykonywana jako pojedyncza jednostka &quot;pracy&quot;</li>
+<li>commit- potwierdza transakcje(wykonuje operacjie z których się składa)</li>
+<li>rollback- wycofuje transakcje(nie wykonuje operacji z których się składa)</li>
+<li>W razie błędu zazwyczaj transakcje zostaje przerwana, tzn. zmiany przez nią wprowadzone nie zostają zatwierdzone, również możemy takie błędy obsługiwać specjalnym blokiem EXCEPTION</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="zadanie-1---widoki">Zadanie 1 - widoki</h1>
+<p>Tworzenie widoków. Należy przygotować kilka widoków ułatwiających dostęp do danych. Należy zwrócić uwagę na strukturę kodu (należy unikać powielania kodu)</p>
+<p>Widoki:</p>
+<ul>
+<li><code>vw_reservation</code>
+<ul>
+<li>widok łączy dane z tabel: <code>trip</code>,  <code>person</code>,  <code>reservation</code></li>
+<li>zwracane dane:  <code>reservation_id</code>,  <code>country</code>, <code>trip_date</code>, <code>trip_name</code>, <code>firstname</code>, <code>lastname</code>, <code>status</code>, <code>trip_id</code>, <code>person_id</code></li>
+</ul>
+</li>
+<li><code>vw_trip</code>
+<ul>
+<li>widok pokazuje liczbę wolnych miejsc na każdą wycieczkę</li>
+<li>zwracane dane: <code>trip_id</code>, <code>country</code>, <code>trip_date</code>, <code>trip_name</code>, <code>max_no_places</code>, <code>no_available_places</code> (liczba wolnych miejsc)</li>
+</ul>
+</li>
+<li><code>vw_available_trip</code>
+<ul>
+<li>podobnie jak w poprzednim punkcie, z tym że widok pokazuje jedynie dostępne wycieczki (takie które są w przyszłości i są na nie wolne miejsca)</li>
+</ul>
+</li>
+</ul>
+<p>Proponowany zestaw widoków można rozbudować wedle uznania/potrzeb</p>
+<ul>
+<li>np. można dodać nowe/pomocnicze widoki</li>
+<li>np. można zmienić def. widoków, dodając nowe/potrzebne pola</li>
+</ul>
+<h1 id="zadanie-1----rozwiązanie">Zadanie 1  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">-- vw_reservation</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">view</span> VW_RESERVATION <span class="hljs-keyword">as</span>
+<span class="hljs-keyword">select</span> r.RESERVATION_ID, t.COUNTRY, t.TRIP_DATE, t.TRIP_NAME,
+       p.FIRSTNAME, p.LASTNAME, r.STATUS, r.TRIP_ID, r.PERSON_ID
+<span class="hljs-keyword">from</span> RESERVATION r
+<span class="hljs-keyword">join</span> TRIP t <span class="hljs-keyword">on</span> t.TRIP_ID <span class="hljs-operator">=</span> r.TRIP_ID
+<span class="hljs-keyword">join</span> PERSON p <span class="hljs-keyword">on</span> p.PERSON_ID <span class="hljs-operator">=</span> r.PERSON_ID;
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\vw_reservations.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">-- vw_trip</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">view</span> VW_TRIP <span class="hljs-keyword">as</span>
+<span class="hljs-keyword">select</span> trip.TRIP_ID, country, trip_date, trip_name,
+	max_no_places,
+	(max_no_places<span class="hljs-operator">-</span> <span class="hljs-built_in">count</span>(reservation_id)) <span class="hljs-keyword">as</span> no_available_places
+<span class="hljs-keyword">from</span> TRIP
+<span class="hljs-keyword">left</span> <span class="hljs-keyword">join</span> RESERVATION
+<span class="hljs-keyword">on</span> TRIP.TRIP_ID <span class="hljs-operator">=</span> RESERVATION.TRIP_ID <span class="hljs-keyword">and</span> RESERVATION.STATUS <span class="hljs-keyword">not</span> <span class="hljs-keyword">like</span> <span class="hljs-string">&#x27;C&#x27;</span>
+<span class="hljs-keyword">group</span> <span class="hljs-keyword">by</span> TRIP.TRIP_ID, country, trip_date, trip_name, max_no_places
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\vw_trip.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">-- vw_available_trip</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">view</span> VW_AVAILABLE_TRIP <span class="hljs-keyword">as</span>
+<span class="hljs-keyword">select</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">from</span> vw_trip
+<span class="hljs-keyword">where</span> TRIP_DATE <span class="hljs-operator">&gt;</span> <span class="hljs-built_in">current_date</span> <span class="hljs-keyword">AND</span> NO_AVAILABLE_PLACES<span class="hljs-operator">&gt;</span><span class="hljs-number">0</span>;
+</code></pre>
+<h2 id=""><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\vw_available_trip.png" alt=""></h2>
+<h1 id="zadanie-2----funkcje">Zadanie 2  - funkcje</h1>
+<p>Tworzenie funkcji pobierających dane/tabele. Podobnie jak w poprzednim przykładzie należy przygotować kilka funkcji ułatwiających dostęp do danych</p>
+<p>Procedury:</p>
+<ul>
+<li><code>f_trip_participants</code>
+<ul>
+<li>zadaniem funkcji jest zwrócenie listy uczestników wskazanej wycieczki</li>
+<li>parametry funkcji: <code>trip_id</code></li>
+<li>funkcja zwraca podobny zestaw danych jak widok  <code>vw_eservation</code></li>
+</ul>
+</li>
+<li><code>f_person_reservations</code>
+<ul>
+<li>zadaniem funkcji jest zwrócenie listy rezerwacji danej osoby</li>
+<li>parametry funkcji: <code>person_id</code></li>
+<li>funkcja zwraca podobny zestaw danych jak widok <code>vw_reservation</code></li>
+</ul>
+</li>
+<li><code>f_available_trips_to</code>
+<ul>
+<li>zadaniem funkcji jest zwrócenie listy wycieczek do wskazanego kraju, dostępnych w zadanym okresie czasu (od <code>date_from</code> do <code>date_to</code>)</li>
+<li>parametry funkcji: <code>country</code>, <code>date_from</code>, <code>date_to</code></li>
+</ul>
+</li>
+</ul>
+<p>Funkcje powinny zwracać tabelę/zbiór wynikowy. Należy rozważyć dodanie kontroli parametrów, (np. jeśli parametrem jest <code>trip_id</code> to można sprawdzić czy taka wycieczka istnieje). Podobnie jak w przypadku widoków należy zwrócić uwagę na strukturę kodu</p>
+<p>Czy kontrola parametrów w przypadku funkcji ma sens?</p>
+<ul>
+<li>jakie są zalety/wady takiego rozwiązania?</li>
+</ul>
+<p>Proponowany zestaw funkcji można rozbudować wedle uznania/potrzeb</p>
+<ul>
+<li>np. można dodać nowe/pomocnicze funkcje/procedury</li>
+</ul>
+<h1 id="zadanie-2----rozwiązanie">Zadanie 2  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">--f_trip_participants</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">function</span> f_trip_participants(tripID number )
+    <span class="hljs-keyword">return</span> trip_participants_table
+<span class="hljs-keyword">as</span>
+    <span class="hljs-keyword">result</span> trip_participants_table;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">select</span> TRIP_PARTICIPANT(p.PERSON_ID, p.FIRSTNAME, p.LASTNAME)
+    bulk <span class="hljs-keyword">collect</span> <span class="hljs-keyword">into</span> <span class="hljs-keyword">result</span>
+    <span class="hljs-keyword">from</span> RESERVATION r
+    <span class="hljs-keyword">join</span> PERSON p <span class="hljs-keyword">on</span> p.PERSON_ID <span class="hljs-operator">=</span> r.PERSON_ID <span class="hljs-keyword">and</span> r.STATUS <span class="hljs-keyword">not</span> <span class="hljs-keyword">like</span> <span class="hljs-string">&#x27;C&#x27;</span>
+    <span class="hljs-keyword">where</span> r.TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">result</span>;
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\f_trip_participants.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--f_person_reservations</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">function</span> f_person_reservations(personID number )
+    <span class="hljs-keyword">return</span> person_reservations_table
+<span class="hljs-keyword">as</span>
+    <span class="hljs-keyword">result</span> person_reservations_table;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">select</span> person_reservation(r.RESERVATION_ID, r.TRIP_ID, r.PERSON_ID, r.STATUS)
+    bulk <span class="hljs-keyword">collect</span> <span class="hljs-keyword">into</span> <span class="hljs-keyword">result</span>
+    <span class="hljs-keyword">from</span> RESERVATION r
+    <span class="hljs-keyword">where</span> r.PERSON_ID <span class="hljs-operator">=</span> personID;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">result</span>;
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\f_person_reservations.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--f_available_trips_to</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">FUNCTION</span> f_available_trips_to(country_name VARCHAR2, date_from <span class="hljs-type">DATE</span>, date_to <span class="hljs-type">DATE</span>)
+    <span class="hljs-keyword">RETURN</span> trips_table
+<span class="hljs-keyword">AS</span>
+    <span class="hljs-keyword">result</span> trips_table;
+<span class="hljs-keyword">BEGIN</span>
+      <span class="hljs-keyword">SELECT</span> trip_data(t.TRIP_ID, t.TRIP_NAME, t.COUNTRY, t.TRIP_DATE, t.MAX_NO_PLACES)
+      BULK <span class="hljs-keyword">COLLECT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">result</span>
+      <span class="hljs-keyword">FROM</span> TRIP t
+      <span class="hljs-keyword">WHERE</span> t.COUNTRY <span class="hljs-keyword">LIKE</span> country_name <span class="hljs-keyword">AND</span> t.TRIP_DATE <span class="hljs-keyword">BETWEEN</span> date_from <span class="hljs-keyword">AND</span> date_to;
+
+      <span class="hljs-keyword">RETURN</span> <span class="hljs-keyword">result</span>;
+<span class="hljs-keyword">END</span>;
+</code></pre>
+<h2 id="-1"><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\f_available_trips_to.png" alt=""></h2>
+<h1 id="zadanie-3----procedury">Zadanie 3  - procedury</h1>
+<p>Tworzenie procedur modyfikujących dane. Należy przygotować zestaw procedur pozwalających na modyfikację danych oraz kontrolę poprawności ich wprowadzania</p>
+<p>Procedury</p>
+<ul>
+<li><code>p_add_reservation</code>
+<ul>
+<li>zadaniem procedury jest dopisanie nowej rezerwacji</li>
+<li>parametry: <code>trip_id</code>, <code>person_id</code>,</li>
+<li>procedura powinna kontrolować czy wycieczka jeszcze się nie odbyła, i czy sa wolne miejsca</li>
+<li>procedura powinna również dopisywać inf. do tabeli <code>log</code></li>
+</ul>
+</li>
+<li><code>p_modify_reservation_status</code>
+<ul>
+<li>zadaniem procedury jest zmiana statusu rezerwacji</li>
+<li>parametry: <code>reservation_id</code>, <code>status</code></li>
+<li>procedura powinna kontrolować czy możliwa jest zmiana statusu, np. zmiana statusu już anulowanej wycieczki (przywrócenie do stanu aktywnego nie zawsze jest możliwa – może już nie być miejsc)</li>
+<li>procedura powinna również dopisywać inf. do tabeli <code>log</code></li>
+</ul>
+</li>
+</ul>
+<p>Procedury:</p>
+<ul>
+<li><code>p_modify_max_no_places</code>
+<ul>
+<li>zadaniem procedury jest zmiana maksymalnej liczby miejsc na daną wycieczkę</li>
+<li>parametry: <code>trip_id</code>, <code>max_no_places</code></li>
+<li>nie wszystkie zmiany liczby miejsc są dozwolone, nie można zmniejszyć liczby miejsc na wartość poniżej liczby zarezerwowanych miejsc</li>
+</ul>
+</li>
+</ul>
+<p>Należy rozważyć użycie transakcji</p>
+<p>Należy zwrócić uwagę na kontrolę parametrów (np. jeśli parametrem jest trip_id to należy sprawdzić czy taka wycieczka istnieje, jeśli robimy rezerwację to należy sprawdzać czy są wolne miejsca itp..)</p>
+<p>Proponowany zestaw procedur można rozbudować wedle uznania/potrzeb</p>
+<ul>
+<li>np. można dodać nowe/pomocnicze funkcje/procedury</li>
+</ul>
+<h1 id="zadanie-3----rozwiązanie">Zadanie 3  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">-- p_add_reservation</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">procedure</span> p_add_reservation(tripID <span class="hljs-keyword">in</span> number, personID <span class="hljs-keyword">in</span> number)
+<span class="hljs-keyword">as</span>
+    v_available_places number;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">select</span> no_available_places <span class="hljs-keyword">into</span> v_available_places
+    <span class="hljs-keyword">from</span> VW_AVAILABLE_TRIP
+    <span class="hljs-keyword">where</span> TRIP_ID <span class="hljs-operator">=</span> tripID
+    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> no_available_places;
+
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> RESERVATION(reservation_id, trip_id, person_id, status)
+    <span class="hljs-keyword">values</span> (S_RESERVATION_SEQ.nextval, tripID, personID, <span class="hljs-string">&#x27;N&#x27;</span>);
+
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> <span class="hljs-built_in">LOG</span>(log_id, reservation_id, log_date, status)
+    <span class="hljs-keyword">values</span>(S_LOG_SEQ.nextval,S_RESERVATION_SEQ.currval, trunc(sysdate), <span class="hljs-string">&#x27;N&#x27;</span>);
+
+exception
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist or &#x27;</span> <span class="hljs-operator">||</span>
+                                        <span class="hljs-string">&#x27;there are not any free places &#x27;</span> <span class="hljs-operator">||</span>
+                                         <span class="hljs-string">&#x27;or it has already taken place&#x27;</span>);
+    <span class="hljs-keyword">when</span> others <span class="hljs-keyword">then</span>
+        raise_application_error(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error inserting reservation: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">end</span> p_add_reservation;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_modify_max_no_places</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">PROCEDURE</span> p_modify_max_no_places(tripID <span class="hljs-keyword">IN</span> NUMBER, maxNoPlaces <span class="hljs-keyword">IN</span> NUMBER)
+<span class="hljs-keyword">AS</span>
+    v_reserved_places NUMBER;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> MAX_NO_PLACES <span class="hljs-operator">-</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> v_reserved_places
+    <span class="hljs-keyword">FROM</span> VW_TRIP
+    <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+    IF maxNoPlaces <span class="hljs-operator">&lt;</span> v_reserved_places <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20002</span>, <span class="hljs-string">&#x27;It is not possible to change max_no_places to a value lower than the current number of reserved places&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+
+    <span class="hljs-keyword">UPDATE</span> TRIP
+    <span class="hljs-keyword">SET</span> MAX_NO_PLACES <span class="hljs-operator">=</span> maxNoPlaces
+    <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error updating trip: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_max_no_places;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">-- p_modify_reservation_status</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">PROCEDURE</span> p_modify_reservation_status(
+    p_reservation_id NUMBER,
+    p_status <span class="hljs-type">CHAR</span>
+)
+<span class="hljs-keyword">AS</span>
+    v_available_places NUMBER;
+    v_trip_id NUMBER;
+    v_current_status <span class="hljs-type">CHAR</span>;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> TRIP_ID, STATUS <span class="hljs-keyword">INTO</span> v_trip_id, v_current_status
+    <span class="hljs-keyword">FROM</span> RESERVATION <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id
+    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> TRIP_ID, STATUS;
+
+    <span class="hljs-keyword">SELECT</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> v_available_places
+    <span class="hljs-keyword">FROM</span> vw_trip <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> v_trip_id;
+
+    IF v_available_places <span class="hljs-operator">=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">AND</span> v_current_status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> p_status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;It is not possible to change status to a value other than &#x27;&#x27;C&#x27;&#x27; when no available places are left.&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+
+    <span class="hljs-keyword">UPDATE</span> RESERVATION <span class="hljs-keyword">SET</span> STATUS <span class="hljs-operator">=</span> p_status
+    <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id;
+
+    <span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-built_in">LOG</span> (RESERVATION_ID, LOG_DATE, STATUS)
+    <span class="hljs-keyword">VALUES</span> (p_reservation_id, SYSDATE, p_status);
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip or reservation does not exist.&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_reservation_status;
+</code></pre>
+<hr>
+<h1 id="zadanie-4----triggery">Zadanie 4  - triggery</h1>
+<p>Zmiana strategii zapisywania do dziennika rezerwacji. Realizacja przy pomocy triggerów</p>
+<p>Należy wprowadzić zmianę, która spowoduje, że zapis do dziennika rezerwacji będzie realizowany przy pomocy trierów</p>
+<p>Triggery:</p>
+<ul>
+<li>trigger/triggery obsługujące
+<ul>
+<li>dodanie rezerwacji</li>
+<li>zmianę statusu</li>
+</ul>
+</li>
+<li>trigger zabraniający usunięcia rezerwacji</li>
+</ul>
+<p>Oczywiście po wprowadzeniu tej zmiany należy &quot;uaktualnić&quot; procedury modyfikujące dane.</p>
+<blockquote>
+<p>UWAGA
+Należy stworzyć nowe wersje tych procedur (dodając do nazwy dopisek 4 - od numeru zadania). Poprzednie wersje procedur należy pozostawić w celu  umożliwienia weryfikacji ich poprawności</p>
+</blockquote>
+<p>Należy przygotować procedury: <code>p_add_reservation_4</code>, <code>p_modify_reservation_status_4</code></p>
+<h1 id="zadanie-4----rozwiązanie">Zadanie 4  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">--t_log_insert</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">trigger</span> T_LOG_INSERT
+    after <span class="hljs-keyword">insert</span>
+    <span class="hljs-keyword">on</span> RESERVATION
+    <span class="hljs-keyword">for</span> <span class="hljs-keyword">each</span> <span class="hljs-type">row</span>
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> <span class="hljs-built_in">LOG</span>(log_id, reservation_id, log_date, status)
+    <span class="hljs-keyword">values</span>(S_LOG_SEQ.nextval,:NEW.reservation_id, trunc(sysdate), <span class="hljs-string">&#x27;N&#x27;</span>);
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--t_log_update</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">trigger</span> T_LOG_UPDATE
+    after <span class="hljs-keyword">update</span>
+    <span class="hljs-keyword">on</span> RESERVATION
+    <span class="hljs-keyword">for</span> <span class="hljs-keyword">each</span> <span class="hljs-type">row</span>
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> <span class="hljs-built_in">LOG</span>(log_id, reservation_id, log_date, status)
+    <span class="hljs-keyword">values</span>(S_LOG_SEQ.nextval,:NEW.reservation_id, trunc(sysdate), :NEW.status);
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--t_reservation_delete</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">trigger</span> t_reservation_delete
+before <span class="hljs-keyword">delete</span> <span class="hljs-keyword">on</span> RESERVATION
+<span class="hljs-keyword">for</span> <span class="hljs-keyword">each</span> <span class="hljs-type">row</span>
+<span class="hljs-keyword">begin</span>
+    RAISE_APPLICATION_ERROR(<span class="hljs-number">-20001</span>, <span class="hljs-string">&#x27;Cannot delete reservation.&#x27;</span>);
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_modify_reservation_status_4</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">PROCEDURE</span> p_modify_reservation_status_4(
+    p_reservation_id NUMBER,
+    p_status <span class="hljs-type">CHAR</span>
+)
+<span class="hljs-keyword">AS</span>
+    v_available_places NUMBER;
+    v_trip_id NUMBER;
+    v_current_status <span class="hljs-type">CHAR</span>;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> TRIP_ID, STATUS <span class="hljs-keyword">INTO</span> v_trip_id, v_current_status
+    <span class="hljs-keyword">FROM</span> RESERVATION <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id
+    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> TRIP_ID, STATUS;
+
+    <span class="hljs-keyword">SELECT</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> v_available_places
+    <span class="hljs-keyword">FROM</span> vw_trip <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> v_trip_id;
+
+    IF v_available_places <span class="hljs-operator">=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">AND</span> v_current_status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> p_status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;It is not possible to change status to a value other&#x27;</span>
+                                <span class="hljs-operator">||</span> <span class="hljs-string">&#x27;than &#x27;&#x27;C&#x27;&#x27; when no available places are left.&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+
+    <span class="hljs-keyword">UPDATE</span> RESERVATION <span class="hljs-keyword">SET</span> STATUS <span class="hljs-operator">=</span> p_status
+    <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id;
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip or reservation does not exist.&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_reservation_status_4;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_add_reservation_4</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">procedure</span> p_add_reservation_4(tripID <span class="hljs-keyword">in</span> number, personID <span class="hljs-keyword">in</span> number)
+<span class="hljs-keyword">as</span>
+    v_available_places number;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">select</span> no_available_places <span class="hljs-keyword">into</span> v_available_places
+    <span class="hljs-keyword">from</span> VW_AVAILABLE_TRIP
+    <span class="hljs-keyword">where</span> TRIP_ID <span class="hljs-operator">=</span> tripID
+    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> no_available_places;
+
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> RESERVATION(reservation_id, trip_id, person_id, status)
+    <span class="hljs-keyword">values</span> (S_RESERVATION_SEQ.nextval, tripID, personID, <span class="hljs-string">&#x27;N&#x27;</span>);
+
+exception
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist or &#x27;</span> <span class="hljs-operator">||</span> 
+                                        <span class="hljs-string">&#x27;there are not any free places &#x27;</span> <span class="hljs-operator">||</span>
+                                         <span class="hljs-string">&#x27;or it has already taken place&#x27;</span>);
+    <span class="hljs-keyword">when</span> others <span class="hljs-keyword">then</span>
+        raise_application_error(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error inserting reservation: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">end</span> p_add_reservation_4;
+</code></pre>
+<hr>
+<h1 id="zadanie-5----triggery">Zadanie 5  - triggery</h1>
+<p>Zmiana strategii kontroli dostępności miejsc. Realizacja przy pomocy triggerów</p>
+<p>Należy wprowadzić zmianę, która spowoduje, że kontrola dostępności miejsc na wycieczki (przy dodawaniu nowej rezerwacji, zmianie statusu) będzie realizowana przy pomocy trigerów</p>
+<p>Triggery:</p>
+<ul>
+<li>Trigger/triggery obsługujące:
+<ul>
+<li>dodanie rezerwacji</li>
+<li>zmianę statusu</li>
+</ul>
+</li>
+</ul>
+<p>Oczywiście po wprowadzeniu tej zmiany należy &quot;uaktualnić&quot; procedury modyfikujące dane.</p>
+<blockquote>
+<p>UWAGA
+Należy stworzyć nowe wersje tych procedur (np. dodając do nazwy dopisek 5 - od numeru zadania). Poprzednie wersje procedur należy pozostawić w celu  umożliwienia weryfikacji ich poprawności.</p>
+</blockquote>
+<p>Należy przygotować procedury: <code>p_add_reservation_5</code>, <code>p_modify_reservation_status_5</code></p>
+<h1 id="zadanie-5----rozwiązanie">Zadanie 5  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">--t_before_insert_reservation</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">trigger</span> T_BEFORE_INSERT_RESERVATION
+    before <span class="hljs-keyword">insert</span>
+    <span class="hljs-keyword">on</span> RESERVATION
+    <span class="hljs-keyword">for</span> <span class="hljs-keyword">each</span> <span class="hljs-type">row</span>
+<span class="hljs-keyword">DECLARE</span>
+    v_available_places NUMBER;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> no_available_places <span class="hljs-keyword">INTO</span> v_available_places
+    <span class="hljs-keyword">FROM</span> VW_AVAILABLE_TRIP
+    <span class="hljs-keyword">WHERE</span> trip_id <span class="hljs-operator">=</span> :NEW.trip_id;
+<span class="hljs-keyword">END</span>;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--T_COMPOUND_BEFORE_UPDATE_RESERVATION</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">OR</span> REPLACE <span class="hljs-keyword">TRIGGER</span> T_COMPOUND_BEFORE_UPDATE_RESERVATION
+<span class="hljs-keyword">FOR</span> <span class="hljs-keyword">UPDATE</span> <span class="hljs-keyword">ON</span> RESERVATION
+COMPOUND <span class="hljs-keyword">TRIGGER</span>
+
+    TYPE UPDATE_RESERVATION_STATUS_TABLE <span class="hljs-keyword">IS</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">OF</span> UPDATE_RESERVATION_STATUS;
+    v_reservation_table UPDATE_RESERVATION_STATUS_TABLE :<span class="hljs-operator">=</span> UPDATE_RESERVATION_STATUS_TABLE();
+    is_available NUMBER;
+
+    BEFORE <span class="hljs-keyword">EACH</span> <span class="hljs-type">ROW</span> <span class="hljs-keyword">IS</span>
+    <span class="hljs-keyword">BEGIN</span>
+        v_reservation_table.EXTEND();
+        v_reservation_table(v_reservation_table.LAST) :<span class="hljs-operator">=</span>
+            UPDATE_RESERVATION_STATUS(:NEW.RESERVATION_ID, :NEW.TRIP_ID, :OLD.STATUS, :NEW.STATUS);
+    <span class="hljs-keyword">END</span> BEFORE <span class="hljs-keyword">EACH</span> <span class="hljs-type">ROW</span>;
+
+    AFTER STATEMENT <span class="hljs-keyword">IS</span>
+    <span class="hljs-keyword">BEGIN</span>
+        <span class="hljs-keyword">FOR</span> i <span class="hljs-keyword">IN</span> <span class="hljs-number">1.</span>.v_reservation_table.COUNT LOOP
+            <span class="hljs-keyword">SELECT</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> is_available <span class="hljs-keyword">FROM</span> VW_TRIP
+            <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> v_reservation_table(i).TRIP_ID;
+
+            IF is_available <span class="hljs-operator">&lt;=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">AND</span> v_reservation_table(i).OLD_STATUS <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> v_reservation_table(i).STATUS <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+                RAISE_APPLICATION_ERROR(<span class="hljs-number">-20001</span>,<span class="hljs-string">&#x27;It is not possible to change status to a value other than &#x27;&#x27;C&#x27;&#x27; when no available places are left.&#x27;</span>);
+            <span class="hljs-keyword">END</span> IF;
+        <span class="hljs-keyword">END</span> LOOP;
+    EXCEPTION
+        <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+            RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip or reservation does not exist.&#x27;</span>);
+        <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+            RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+    <span class="hljs-keyword">END</span> AFTER STATEMENT;
+
+<span class="hljs-keyword">END</span> T_COMPOUND_BEFORE_UPDATE_RESERVATION;
+
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">-- p_add_reservation_5</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">procedure</span> p_add_reservation_5(tripID <span class="hljs-keyword">in</span> number, personID <span class="hljs-keyword">in</span> number)
+<span class="hljs-keyword">as</span>
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> RESERVATION(reservation_id, trip_id, person_id, status)
+    <span class="hljs-keyword">values</span> (S_RESERVATION_SEQ.nextval, tripID, personID, <span class="hljs-string">&#x27;N&#x27;</span>);
+exception
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist or &#x27;</span> <span class="hljs-operator">||</span>
+                                        <span class="hljs-string">&#x27;there are not any free places &#x27;</span> <span class="hljs-operator">||</span>
+                                         <span class="hljs-string">&#x27;or it has already taken place&#x27;</span>);
+    <span class="hljs-keyword">when</span> others <span class="hljs-keyword">then</span>
+        raise_application_error(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error inserting reservation: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">end</span> p_add_reservation_5;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_modify_reservation_status_5</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">PROCEDURE</span> p_modify_reservation_status_5(
+    p_reservation_id NUMBER,
+    p_status <span class="hljs-type">CHAR</span>
+)
+<span class="hljs-keyword">AS</span>
+    v_reservation_exist number;
+<span class="hljs-keyword">BEGIN</span>
+
+    <span class="hljs-keyword">SELECT</span> RESERVATION_ID <span class="hljs-keyword">INTO</span> v_reservation_exist
+    <span class="hljs-keyword">FROM</span> RESERVATION <span class="hljs-keyword">WHERE</span> RESERVATION_ID<span class="hljs-operator">=</span>p_reservation_id;
+
+    <span class="hljs-keyword">UPDATE</span> RESERVATION <span class="hljs-keyword">SET</span> STATUS <span class="hljs-operator">=</span> p_status
+    <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id;
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip or reservation does not exist.&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_reservation_status_5;
+</code></pre>
+<hr>
+<h1 id="zadanie-6">Zadanie 6</h1>
+<p>Zmiana struktury bazy danych. W tabeli <code>trip</code>  należy dodać  redundantne pole <code>no_available_places</code>.  Dodanie redundantnego pola uprości kontrolę dostępnych miejsc, ale nieco skomplikuje procedury dodawania rezerwacji, zmiany statusu czy też zmiany maksymalnej liczby miejsc na wycieczki.</p>
+<p>Należy przygotować polecenie/procedurę przeliczającą wartość pola <code>no_available_places</code> dla wszystkich wycieczek (do jednorazowego wykonania)</p>
+<p>Obsługę pola <code>no_available_places</code> można zrealizować przy pomocy procedur lub triggerów</p>
+<p>Należy zwrócić uwagę na spójność rozwiązania.</p>
+<blockquote>
+<p>UWAGA
+Należy stworzyć nowe wersje tych widoków/procedur/triggerów (np. dodając do nazwy dopisek 6 - od numeru zadania). Poprzednie wersje procedur należy pozostawić w celu  umożliwienia weryfikacji ich poprawności.</p>
+</blockquote>
+<ul>
+<li>zmiana struktury tabeli</li>
+</ul>
+<pre><code class="language-sql"><span class="hljs-keyword">alter</span> <span class="hljs-keyword">table</span> trip <span class="hljs-keyword">add</span>  
+    no_available_places <span class="hljs-type">int</span> <span class="hljs-keyword">null</span>
+</code></pre>
+<ul>
+<li>polecenie przeliczające wartość <code>no_available_places</code>
+<ul>
+<li>należy wykonać operację &quot;przeliczenia&quot;  liczby wolnych miejsc i aktualizacji pola  <code>no_available_places</code></li>
+</ul>
+</li>
+</ul>
+<h1 id="zadanie-6----rozwiązanie">Zadanie 6  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">--fill no_available_places column</span>
+<span class="hljs-keyword">declare</span>
+    v_available_places number :<span class="hljs-operator">=</span> <span class="hljs-keyword">NULL</span>;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">for</span> row_t <span class="hljs-keyword">in</span> (<span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> TRIP) LOOP
+        <span class="hljs-keyword">SELECT</span> (max_no_places<span class="hljs-operator">-</span> <span class="hljs-built_in">count</span>(reservation_id)) <span class="hljs-keyword">INTO</span> v_available_places <span class="hljs-keyword">FROM</span> TRIP
+        <span class="hljs-keyword">left</span> <span class="hljs-keyword">join</span> RESERVATION
+        <span class="hljs-keyword">on</span> Trip.TRIP_ID <span class="hljs-operator">=</span> RESERVATION.TRIP_ID <span class="hljs-keyword">and</span> RESERVATION.STATUS <span class="hljs-keyword">not</span> <span class="hljs-keyword">like</span> <span class="hljs-string">&#x27;C&#x27;</span>
+        <span class="hljs-keyword">where</span> TRIP.TRIP_ID <span class="hljs-operator">=</span> row_t.TRIP_ID
+        <span class="hljs-keyword">group</span> <span class="hljs-keyword">by</span> max_no_places;
+
+        <span class="hljs-keyword">UPDATE</span> TRIP
+        <span class="hljs-keyword">set</span> no_available_places <span class="hljs-operator">=</span> v_available_places
+        <span class="hljs-keyword">where</span> trip_id <span class="hljs-operator">=</span> row_t.TRIP_ID;
+    <span class="hljs-keyword">end</span> loop;
+
+    <span class="hljs-keyword">commit</span>;
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<p><img src="file:///c:\Users\macie\OneDrive\Pulpit\Studia\YEAR 2\BD2\AGH-database-course\lab1\img\add_no_available_places.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--vw_available_trips_6</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">view</span> vw_available_trips_6
+<span class="hljs-keyword">as</span>
+<span class="hljs-keyword">select</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">from</span> TRIP
+<span class="hljs-keyword">where</span> TRIP_DATE<span class="hljs-operator">&gt;</span><span class="hljs-built_in">current_date</span> <span class="hljs-keyword">and</span> NO_AVAILABLE_PLACES<span class="hljs-operator">&gt;</span><span class="hljs-number">0</span>
+</code></pre>
+<p><img src="file:////img/vw_available_trips_6.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--f_available_trips_to_6</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">FUNCTION</span> f_available_trips_to_6(country_name VARCHAR2, date_from <span class="hljs-type">DATE</span>, date_to <span class="hljs-type">DATE</span>)
+    <span class="hljs-keyword">RETURN</span> trips_table_6
+<span class="hljs-keyword">AS</span>
+    <span class="hljs-keyword">result</span> trips_table_6;
+<span class="hljs-keyword">BEGIN</span>
+      <span class="hljs-keyword">SELECT</span> trip_data_6(t.TRIP_ID, t.TRIP_NAME, t.COUNTRY, t.TRIP_DATE, t.MAX_NO_PLACES,t.NO_AVAILABLE_PLACES)
+      BULK <span class="hljs-keyword">COLLECT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">result</span>
+      <span class="hljs-keyword">FROM</span> TRIP t
+      <span class="hljs-keyword">WHERE</span> t.COUNTRY <span class="hljs-keyword">LIKE</span> country_name <span class="hljs-keyword">AND</span> t.TRIP_DATE <span class="hljs-keyword">BETWEEN</span> date_from <span class="hljs-keyword">AND</span> date_to;
+
+      <span class="hljs-keyword">RETURN</span> <span class="hljs-keyword">result</span>;
+<span class="hljs-keyword">END</span>;
+
+<span class="hljs-keyword">create</span> type trip_data_6 <span class="hljs-keyword">as</span> object(
+    trip_id number,
+    trip_name varchar2(<span class="hljs-number">100</span>),
+    country varchar2(<span class="hljs-number">50</span>),
+    trip_date <span class="hljs-type">date</span>,
+    max_no_places number,
+    no_available_places number
+)
+
+<span class="hljs-keyword">create</span> type TRIPS_TABLE_6 <span class="hljs-keyword">as</span> <span class="hljs-keyword">table</span> <span class="hljs-keyword">of</span> TRIP_DATA_6
+</code></pre>
+<p><img src="file:////img/f_available_trips_to_6.png" alt=""></p>
+<pre><code class="language-sql"><span class="hljs-comment">--p_modify_max_no_places_6</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">or</span> replace <span class="hljs-keyword">PROCEDURE</span> p_modify_max_no_places_6(tripID <span class="hljs-keyword">IN</span> NUMBER, maxNoPlaces <span class="hljs-keyword">IN</span> NUMBER)
+<span class="hljs-keyword">AS</span>
+    v_reserved_places NUMBER;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> MAX_NO_PLACES <span class="hljs-operator">-</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> v_reserved_places
+    <span class="hljs-keyword">FROM</span> TRIP
+    <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+    IF maxNoPlaces <span class="hljs-operator">&lt;</span> v_reserved_places <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20002</span>, <span class="hljs-string">&#x27;It is not possible to change max_no_places to a value lower than the current number of reserved places&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+
+    <span class="hljs-keyword">UPDATE</span> TRIP
+    <span class="hljs-keyword">SET</span> MAX_NO_PLACES <span class="hljs-operator">=</span> maxNoPlaces, NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> maxNoPlaces <span class="hljs-operator">-</span> v_reserved_places
+    <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error updating trip: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_max_no_places_6;
+</code></pre>
+<hr>
+<h1 id="zadanie-6a----procedury">Zadanie 6a  - procedury</h1>
+<p>Obsługę pola <code>no_available_places</code> należy zrealizować przy pomocy procedur</p>
+<ul>
+<li>procedura dodająca rezerwację powinna aktualizować pole <code>no_available_places</code> w tabeli trip</li>
+<li>podobnie procedury odpowiedzialne za zmianę statusu oraz zmianę maksymalnej liczby miejsc na wycieczkę</li>
+<li>należy przygotować procedury oraz jeśli jest to potrzebne, zaktualizować triggery oraz widoki</li>
+</ul>
+<blockquote>
+<p>UWAGA
+Należy stworzyć nowe wersje tych widoków/procedur/triggerów (np. dodając do nazwy dopisek 6a - od numeru zadania). Poprzednie wersje procedur należy pozostawić w celu  umożliwienia weryfikacji ich poprawności.</p>
+</blockquote>
+<ul>
+<li>może  być potrzebne wyłączenie 'poprzednich wersji' triggerów</li>
+</ul>
+<h1 id="zadanie-6a----rozwiązanie">Zadanie 6a  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">--p_add_reservation_6a</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">procedure</span> p_add_reservation_6a(tripID <span class="hljs-keyword">in</span> number, personID <span class="hljs-keyword">in</span> number)
+<span class="hljs-keyword">as</span>
+    v_available_places number;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">select</span> no_available_places <span class="hljs-keyword">into</span> v_available_places
+    <span class="hljs-keyword">from</span> VW_AVAILABLE_TRIPS_6
+    <span class="hljs-keyword">where</span> TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> RESERVATION(reservation_id, trip_id, person_id, status)
+    <span class="hljs-keyword">values</span> (S_RESERVATION_SEQ.nextval, tripID, personID, <span class="hljs-string">&#x27;N&#x27;</span>);
+    
+    <span class="hljs-keyword">update</span> trip 
+    <span class="hljs-keyword">set</span> NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> v_available_places<span class="hljs-number">-1</span>
+    <span class="hljs-keyword">where</span> TRIP_ID <span class="hljs-operator">=</span> tripID;
+
+exception
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist or &#x27;</span> <span class="hljs-operator">||</span>
+                                        <span class="hljs-string">&#x27;there are not any free places &#x27;</span> <span class="hljs-operator">||</span>
+                                         <span class="hljs-string">&#x27;or it has already taken place&#x27;</span>);
+    <span class="hljs-keyword">when</span> others <span class="hljs-keyword">then</span>
+        raise_application_error(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error inserting reservation: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">end</span> p_add_reservation_6a;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_modify_reservation_status_6a</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">or</span> replace <span class="hljs-keyword">PROCEDURE</span> p_modify_reservation_status_6a(
+    p_reservation_id NUMBER,
+    p_status <span class="hljs-type">CHAR</span>
+)
+<span class="hljs-keyword">AS</span>
+    v_available_places NUMBER;
+    v_trip_id NUMBER;
+    v_current_status <span class="hljs-type">CHAR</span>;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> TRIP_ID, STATUS <span class="hljs-keyword">INTO</span> v_trip_id, v_current_status
+    <span class="hljs-keyword">FROM</span> RESERVATION <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id
+    <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> TRIP_ID, STATUS;
+
+    <span class="hljs-keyword">SELECT</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> v_available_places
+    <span class="hljs-keyword">FROM</span> TRIP <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> v_trip_id;
+
+    IF v_available_places <span class="hljs-operator">=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">AND</span> v_current_status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> p_status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;It is not possible to change status to a value other&#x27;</span>
+                                <span class="hljs-operator">||</span> <span class="hljs-string">&#x27;than &#x27;&#x27;C&#x27;&#x27; when no available places are left.&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+
+    <span class="hljs-keyword">UPDATE</span> RESERVATION <span class="hljs-keyword">SET</span> STATUS <span class="hljs-operator">=</span> p_status
+    <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id;
+
+    IF v_current_status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> p_status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        <span class="hljs-keyword">UPDATE</span> TRIP
+        <span class="hljs-keyword">SET</span> NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> v_available_places<span class="hljs-number">-1</span>
+        <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> v_trip_id;
+    ELSIF v_current_status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> p_status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        <span class="hljs-keyword">UPDATE</span> TRIP
+        <span class="hljs-keyword">SET</span> NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> v_available_places<span class="hljs-operator">+</span><span class="hljs-number">1</span>
+        <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> v_trip_id;
+    <span class="hljs-keyword">END</span> IF;
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip or reservation does not exist.&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_reservation_status_6a;
+</code></pre>
+<hr>
+<h1 id="zadanie-6b----triggery">Zadanie 6b -  triggery</h1>
+<p>Obsługę pola <code>no_available_places</code> należy zrealizować przy pomocy triggerów</p>
+<ul>
+<li>podczas dodawania rezerwacji trigger powinien aktualizować pole <code>no_available_places</code> w tabeli trip</li>
+<li>podobnie, podczas zmiany statusu rezerwacji</li>
+<li>należy przygotować trigger/triggery oraz jeśli jest to potrzebne, zaktualizować procedury modyfikujące dane oraz widoki</li>
+</ul>
+<blockquote>
+<p>UWAGA
+Należy stworzyć nowe wersje tych widoków/procedur/triggerów (np. dodając do nazwy dopisek 6b - od numeru zadania). Poprzednie wersje procedur należy pozostawić w celu  umożliwienia weryfikacji ich poprawności.</p>
+</blockquote>
+<ul>
+<li>może  być potrzebne wyłączenie 'poprzednich wersji' triggerów</li>
+</ul>
+<h1 id="zadanie-6b----rozwiązanie">Zadanie 6b  - rozwiązanie</h1>
+<pre><code class="language-sql"><span class="hljs-comment">--t_before_insert_reservation_6b</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">trigger</span> t_before_insert_reservation_6b
+    before <span class="hljs-keyword">insert</span>
+    <span class="hljs-keyword">on</span> RESERVATION
+    <span class="hljs-keyword">for</span> <span class="hljs-keyword">each</span> <span class="hljs-type">row</span>
+<span class="hljs-keyword">declare</span>
+    v_available_places number;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">SELECT</span> no_available_places <span class="hljs-keyword">INTO</span> v_available_places
+    <span class="hljs-keyword">FROM</span> VW_AVAILABLE_TRIPS_6
+    <span class="hljs-keyword">WHERE</span> trip_id <span class="hljs-operator">=</span> :NEW.trip_id;
+
+    <span class="hljs-keyword">UPDATE</span> TRIP
+    <span class="hljs-keyword">SET</span> NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> v_available_places<span class="hljs-number">-1</span>
+    <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> :NEW.trip_id;
+
+exception
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist or &#x27;</span> <span class="hljs-operator">||</span>
+                                        <span class="hljs-string">&#x27;there are not any free places &#x27;</span> <span class="hljs-operator">||</span>
+                                         <span class="hljs-string">&#x27;or it has already taken place&#x27;</span>);
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_add_reservation_6b</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">procedure</span> p_add_reservation_6b(tripID <span class="hljs-keyword">in</span> number, personID <span class="hljs-keyword">in</span> number)
+<span class="hljs-keyword">as</span>
+<span class="hljs-keyword">begin</span>
+
+    <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> RESERVATION(reservation_id, trip_id, person_id, status)
+    <span class="hljs-keyword">values</span> (S_RESERVATION_SEQ.nextval, tripID, personID, <span class="hljs-string">&#x27;N&#x27;</span>);
+
+exception
+    <span class="hljs-keyword">when</span> others <span class="hljs-keyword">then</span>
+        raise_application_error(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Error inserting reservation: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">end</span> p_add_reservation_6b;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--t_before_update_reservation_6b</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">or</span> replace <span class="hljs-keyword">trigger</span> t_before_update_reservation_6b
+    before <span class="hljs-keyword">update</span>
+    <span class="hljs-keyword">on</span> RESERVATION
+    <span class="hljs-keyword">for</span> <span class="hljs-keyword">each</span> <span class="hljs-type">row</span>
+<span class="hljs-keyword">declare</span>
+    v_available_places number;
+<span class="hljs-keyword">begin</span>
+    <span class="hljs-keyword">SELECT</span> NO_AVAILABLE_PLACES <span class="hljs-keyword">INTO</span> v_available_places
+    <span class="hljs-keyword">FROM</span> TRIP <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> :NEW.trip_id;
+
+    IF v_available_places <span class="hljs-operator">=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">AND</span> :OLD.status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> :NEW.status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;It is not possible to change status to a value other&#x27;</span>
+                                <span class="hljs-operator">||</span> <span class="hljs-string">&#x27;than &#x27;&#x27;C&#x27;&#x27; when no available places are left.&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+    
+    IF :OLD.status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> :NEW.status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        <span class="hljs-keyword">UPDATE</span> TRIP
+        <span class="hljs-keyword">SET</span> NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> v_available_places<span class="hljs-number">-1</span>
+        <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> :NEW.TRIP_ID;
+    ELSIF :OLD.status <span class="hljs-operator">!=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">AND</span> :NEW.status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;C&#x27;</span> <span class="hljs-keyword">THEN</span>
+        <span class="hljs-keyword">UPDATE</span> TRIP
+        <span class="hljs-keyword">SET</span> NO_AVAILABLE_PLACES <span class="hljs-operator">=</span> v_available_places<span class="hljs-operator">+</span><span class="hljs-number">1</span>
+        <span class="hljs-keyword">WHERE</span> TRIP_ID <span class="hljs-operator">=</span> :NEW.trip_id;
+    <span class="hljs-keyword">END</span> IF;
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> NO_DATA_FOUND <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20004</span>, <span class="hljs-string">&#x27;Trip does not exist.&#x27;</span>);
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">end</span>;
+</code></pre>
+<pre><code class="language-sql"><span class="hljs-comment">--p_modify_reservation_status_6b</span>
+<span class="hljs-keyword">create</span> <span class="hljs-keyword">PROCEDURE</span> p_modify_reservation_status_6b(
+    p_reservation_id NUMBER,
+    p_status <span class="hljs-type">CHAR</span>
+)
+<span class="hljs-keyword">AS</span>
+    v_reservation_exists number;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> <span class="hljs-built_in">count</span>(<span class="hljs-operator">*</span>) <span class="hljs-keyword">INTO</span> v_reservation_exists
+    <span class="hljs-keyword">FROM</span> RESERVATION <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id;
+
+    IF v_reservation_exists <span class="hljs-operator">=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20003</span>, <span class="hljs-string">&#x27;Reservation does not exist&#x27;</span>);
+    <span class="hljs-keyword">END</span> IF;
+
+    <span class="hljs-keyword">UPDATE</span> RESERVATION <span class="hljs-keyword">SET</span> STATUS <span class="hljs-operator">=</span> p_status
+    <span class="hljs-keyword">WHERE</span> RESERVATION_ID <span class="hljs-operator">=</span> p_reservation_id;
+
+EXCEPTION
+    <span class="hljs-keyword">WHEN</span> OTHERS <span class="hljs-keyword">THEN</span>
+        RAISE_APPLICATION_ERROR(<span class="hljs-number">-20005</span>, <span class="hljs-string">&#x27;An error occurred: &#x27;</span> <span class="hljs-operator">||</span> SQLERRM);
+<span class="hljs-keyword">END</span> p_modify_reservation_status_6b;
+</code></pre>
+<h1 id="zadanie-7---podsumowanie">Zadanie 7 - podsumowanie</h1>
+<p>Porównaj sposób programowania w systemie Oracle PL/SQL ze znanym ci systemem/językiem MS Sqlserver T-SQL</p>
+<ol>
+<li>
+<p>Trudność</p>
+<ul>
+<li>PL/SQL - bardziej złozony</li>
+<li>T-SQL - stosunkowo prosty</li>
+</ul>
+</li>
+<li>
+<p>Składnia:</p>
+<ul>
+<li>PL/SQL: bardziej deklaratywne podejście</li>
+<li>T-SQL: bardziej proceduralne podejście
+T-SQL uznawany za prostszy dla początkujących</li>
+</ul>
+</li>
+<li>
+<p>Typy danych i zmienne</p>
+<ul>
+<li>typ <code>money</code> jest w T-SQL, brak w PL/SQL</li>
+<li>PL/SQL pozwala na definiowane typów danych uzytkownika, T-SQL tego nie zapewnia</li>
+<li>T-SQL ma opcję korzystania z tymczasowej tabeli, PL/SQL tego nie ma</li>
+</ul>
+</li>
+<li>
+<p>Trigery</p>
+<ul>
+<li>PL/SQL: mogą być definiowane jako triger wierszowy (FOR EACH ROW) lub triger zbiorowy (FOR EACH STATEMENT).</li>
+<li>T-SQL: triger jest zawsze trigerem wierszowym i wykonuje się dla każdej zmiany wiersza, którą obejmuje.</li>
+</ul>
+</li>
+<li>
+<p>Struktura bloków</p>
+<ul>
+<li>PL/SQL: zaczynają się od słowa kluczowego DECLARE i kończą na słowie kluczowym END.</li>
+<li>T-SQL:  zaczynają się od BEGIN i kończą na END.</li>
+</ul>
+</li>
+<li>
+<p>Dostęp do zmiennych specjalnych:</p>
+<ul>
+<li>PL/SQL: można korzystać ze zmiennych specjalnych, takich jak :NEW i :OLD, aby uzyskać dostęp do nowych i starych wartości wierszy.</li>
+<li>T-SQL: dostęp do nowych i starych wartości wierszy odbywa się za pomocą pseudo-tabeli INSERTED i DELETED.</li>
+</ul>
+</li>
+<li>
+<p>Commitowanie</p>
+<ul>
+<li>PL/SQL: mozna uzyc AUTOCOMMIT</li>
+<li>T-SQL: brak komendy AUTOCOMMIT, trzeba manualnie commitować kazda transakcję</li>
+</ul>
+</li>
+<li>
+<p>Gorsza osługa stringów w PL/SQL niz T-SQL</p>
+</li>
+<li>
+<p>Lepsza obsługa zmiennych date/time w PL/SQL niz w T-SQL</p>
+</li>
+<li>
+<p>Performance:</p>
+<ul>
+<li>PL/SQL: szybszy czas wykonania złozonych zapytań, wydajniejszy przy większych ilościach danych</li>
+<li>T-SQL: bardziej ograniczone uzycie pamięci systemowej (moze to sprawiac problemy przy pracy z większymi ilościami danych)</li>
+</ul>
+</li>
+<li>
+<p>Obsługa błędów</p>
+<ul>
+<li>PL/SQL: W PL/SQL można definiować obsługę błędów za pomocą bloków EXCEPTION.</li>
+<li>T-SQL: W T-SQL obsługę błędów można zdefiniować za pomocą bloku TRY...CATCH.</li>
+</ul>
+</li>
+</ol>
+<p>Wnioski: Język PSL/SQL pozwala na więcej szczegółowości podczas pisania kodu w stosunku do T-SQL. Technologia pochodząca od Oracle pozwala takze na wykonanie wielu deklaracji SQL na raz po zamknięciu ich w bloku.
+PL/SQL posiada równiez dobre wsparcie obsługi błędów. Jego składnia moze być jednak na początku trochę trudniejsza w przyswajaniu jego zawiłości.</p>
+
+            
+            
+        </body>
+        </html>

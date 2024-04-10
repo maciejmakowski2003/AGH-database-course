@@ -1,4 +1,3 @@
-
 # Dokumentowe bazy danych – MongoDB
 
 ćwiczenie 1
@@ -33,9 +32,9 @@ Stwórz bazę danych/kolekcję/dokument
 ## Zadanie 1  - rozwiązanie
 
 #### Wyniki: 
-- połączenie za pomocą konsoli
+- **połączenie za pomocą konsoli**
 ![](./img/img1.png)
-- utworzenie bazy i dodanie przykładowych danych
+- **utworzenie bazy i dodanie przykładowych danych**
 ![](./img/img2.png)
 ![](./img/img3.png)
 
@@ -101,18 +100,59 @@ Przetestuj działanie operacji
 ## Zadanie 2  - rozwiązanie
 
 #### Wyniki: 
-- mongorestore
+- **mongorestore**
 ![](./img/img7.png)
-- import za pomocą MongoDB Compass
+
+- **import za pomocą MongoDB Compass**
 ![](./img/img4.png)
 
-- mongodump
+- **mongodump**
 ![](./img/img5.png)
 
-- mongoexport
+- **mongoexport**
 ![](./img/img6.png)
 
-- komentarz do struktur
+- **komentarz do yelp**
+
+  1. **Businesses**:
+     - Każda firma w bazie Yelp jest reprezentowana jako osobny dokument w kolekcji. Dokumenty te zawierają informacje o nazwie firmy, jej kategorii (np. restauracja, salon fryzjerski), adresie, godzinach otwarcia, ocenach, liczbie recenzji itp.
+
+  2. **Users**:
+     - Użytkownicy w Yelp również są reprezentowani jako osobne dokumenty w kolekcji. Mogą zawierać informacje takie jak nazwa użytkownika, adres e-mail, data dołączenia, oceny wystawione przez użytkownika, znajomi itp.
+
+  3. **Reviews**:
+     - Recenzje są osobnymi dokumentami, które łączą użytkowników z firmami. Zawierają informacje takie jak tekst recenzji, ocena (w skali od 1 do 5 gwiazdek), datę recenzji, oraz ID użytkownika i ID firmy.
+
+  4. **Tips**:
+     - Yelp przechowuje również komentarze dodawane przez użytkowników do profilu firmy. Komentarze są reprezentowane jako osobne dokumenty z polem tekstowym zawierającym treść komentarza, a także z metadanymi takimi jak autor komentarza, data dodania itp.
+
+  5. **Checkin**:
+     - Yelp przechowuje także informacje o ilości obecności użytkowników w danych firmach w danym dniu tygodnia i o danej godzinie, gdzie kluczami są pary wartości reprezentujące godzinę i dzień tygodnia, a wartościami są liczby reprezentujące liczbę "check-ins" w danym czasie i dniu tygodnia
+
+- **komentarz do sample_weatherdata**
+Dokument trzyma dane o warunkach pogodowych w danym miejscu i danym czasie. 
+
+  1. **Lokalizacja**
+   - Lokalizację trzyma za pomocą obiektu określającego typu pozycji np. punkt i jego współrzędne
+
+  2. **Dane pogodowe**
+   - Trzymane są w obiektach/tablicach których struktura zależy od charakteru danego pomiaru np.:
+	```js
+	"skyCondition": {
+		"ceilingHeight": {
+			"value": 99999,
+			"quality": "9",
+			"determination": "9"
+    	},
+    	"cavok": "N"
+  }
+	```
+  3. **Czas i data**
+   - Trzymane za pomocą stringa np.: 
+  ```js
+  "1984-03-05T13:00:00.000Z"
+  ```
+
 
 ---
 

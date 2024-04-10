@@ -172,15 +172,65 @@ Stwórz nową bazę danych
 
 ## Zadanie 3  - rozwiązanie
 
-> Wyniki: 
-> 
-> przykłady, kod, zrzuty ekranów, komentarz ...
+#### Wyniki: 
 
-```js
---  ...
-```
+- **Struktura kolekcji/dokumentów**
+  ![](./img/img_customers.png)
+  ![](./img/img_orders.png)
+  ![](./img/img_products.png)
 
+- **Insert**
+	```js
+	db.customers.insertOne({ "firstname": "John",lastname: "Doe", "email": "john@example.com", "city": "London", "phone": "123456789" })
 
+	db.products.insertOne({name: "Bread", price: 6.99})
+	
+	db.products.insertOne({
+	"name": "Wagyu Beef",
+	"price": 99.99,
+	"details": 
+		{
+			"weight": 2000,
+			"importCountry": "Japan"
+		},
+	"description": "High-quality Wagyu beef",
+	"categories": ["Meat", "Luxury"]
+	})
+
+	db.orders.insertOne({"customer_id":ObjectId("66169c546811026c07a1f1de"), "products": [{"product_id":ObjectId("66169b6f580acf2f9da1f1e0"), "quantity": 1}, {"product_id":ObjectId("6616bcfaa6cd0c156791d5d8"), "quantity":6}]})
+	
+	db.products.insertMany([{name: "Milk", price: 3.49}, {name: "Chocolate", price: 5}])
+	```
+- **Update**
+  ```js
+  db.customers.updateOne(
+	{ "email": "john@example.com" },
+	{ $set: { "phone": "333444555" } }
+	) 
+  ```
+
+- **Delete**
+  ```js
+  db.products.deleteOne({"_id":ObjectId("66169bc0580acf2f9da1f1e1")})
+
+  db.products.deleteMany({ "name": /a/ })//usuwa te produkty, które mają literę a
+  ```
+
+- **Find**
+  ```js
+  db.customers.findOne({"email":"john@example.com"})//email taki jak podany
+  ```
+  ![](./img/img_find1.png)
+
+  ```js
+  db.products.find({ "price": { $gt: 6 } })//cena większa od 6
+  ```
+  ![](./img/img_find2.png)
+
+  ```js
+  db.products.find({ "categories": { $in: ["Meat"] } })//produkt mający w tablicy kategorii kategorię "Meat"
+  ```
+  ![](./img/img_find3.png)
 ---
 
 Ćwiczenie przeznaczone jest do wykonania podczas zajęć. Pod koniec zajęć należy przesłać wyniki prac

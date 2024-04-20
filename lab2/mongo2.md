@@ -220,6 +220,129 @@ Do sprawozdania należy kompletny zrzut wykonanych/przygotowanych baz danych (ta
 
 
 ## Zadanie 2  - rozwiązanie
+Wybraliśmy zagadnienie A
+
+### Dekompozycja
+
+Kolekcje:
+1. lecturers
+- wykładowcy prowadzą ćwiczenia/wykłady
+- kady dokument reprezentuje jednego wykładowcę
+Schemat:
+```json
+{
+  "_id": ObjectId,       
+  "firstname": String, 
+  "lastname": String,
+  "email": String,
+  "departmentId": ObjectId,
+  "birdhDate": Date,    
+  "subjectsIds": List<ObjectId>,
+}
+```
+
+2. students
+- studenci mogą uczęszczać na zajęcia/wykłady
+- kazdy dokumenty reprezentuje jednego studenta
+
+```json
+{
+  "_id": ObjectId,       
+  "firstname": String,     
+  "lastname": String,      
+  "email": String,  
+  "birthDate": String,
+  "courseIds": List<ObjectId>
+}
+```
+
+3. courses
+- na studia mogą zapisywać się studenci
+- kazdy dokument reprezentuje pojedynczy kierunek studiów
+```json
+{
+  "_id": ObjectId,          
+  "name": String,              
+  "description": String,
+  "departmentId": ObjectId
+}
+```
+
+4. departments
+- wydzialy studiów
+
+```json
+{
+  "_id": ObjectId,          
+  "name": String,              
+  "description": String,
+}
+```
+
+5. semesters
+```json
+{
+  "_id": ObjectId,          
+  "semesterNumber": Int32,
+  "startDate": Date,
+  "endDate": Date,
+  "courseId": ObjectId
+}
+```
+
+6. subjects
+```json
+{
+  "_id": ObjectId,
+  "name": String,
+  "description": String,
+  "ECTSPoints": String
+}
+```
+
+7. classSeries
+- kazdy dokument reprezentuje przedmiot na danym semestrze
+```json
+{
+  "_id": ObjectId,
+  "semesterId": ObjectId,
+  "subjectId": ObjectId,
+}
+```
+8. classes
+```json
+{
+  "_id": ObjectId,          
+  "startDate": Date, // date includes both date and time of the class start/end
+  "endDate": Date,
+  "semesterId": ObjectId,
+  "subjectId": ObjectId,
+  "lecturerId": ObjectId
+}
+```
+
+9. classSerieRatings
+- kazdy dokument reprezentuje pojedynczą ocenę zajęć na danym semestrze, którą wystawia student
+```json
+{
+  "_id": ObjectId,
+  "rating": Int32,
+  "classSerieId": ObjectId,
+  "studentId": ObjectId
+}
+```
+
+10. studentGrades
+- kazdy dokument reprezentuje pojedynczą ocenę z przedmiotu, którą otrzymuje student
+
+```json
+{
+  "_id": ObjectId,
+  "grade": Int32,
+  "studentId": ObjectId,
+  "classSerieId": ObjectId
+}
+```
 
 > Wyniki: 
 > 

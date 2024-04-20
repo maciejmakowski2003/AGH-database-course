@@ -6,6 +6,8 @@
 ---
 
 **Imiona i nazwiska autorów:**
+Franciszek Job
+Maciej Makowski
 
 --- 
 
@@ -43,13 +45,148 @@ W niektórych przypadkach może być potrzebne wykorzystanie mechanizmu Aggregat
 
 ## Zadanie 1  - rozwiązanie
 
-> Wyniki: 
-> 
-> przykłady, kod, zrzuty ekranów, komentarz ...
-
 ```js
---  ...
+//zadanie 1 
+db.business.find( { categories : "Restaurants", "hours.Monday": {$exists: true}, stars: {$gt: 4} }, 
+{name: 1, full_address: 1, categories: 1, hours: 1, stars: 1, _id: 0} )
+.sort({name: 1})
 ```
+![](./img2/task1_zad1.png)
+**count aby lepiej zweryfikować poprawność zapytania**
+```js
+//zadanie 2
+DOESNT WORK :((
+[
+  { 
+    $project: {
+      business_id: 1,
+      name: 1
+  	}    
+  },
+  {
+    $lookup: {
+      from: "tip",
+      localField: "business_id",
+      foreignField: "business_id",
+      as: "tip"
+    }
+  },
+  {
+    $unwind: "$tip"
+  },
+  {
+    $match: {
+      "tip.date": { "$gte": "2012-01-01", "$lt": "2013-01-01" }
+    }
+  },
+  {
+    $project:{
+      name: 1, 
+    }
+  },
+  {
+    $group:{
+      _id: "$name",
+     "count": { "$sum": 1 }
+
+    }
+  }
+]
+```
+![](./img2/task1_zad2.png)
+```js
+//zadanie 3
+db.review.aggregate([
+  {
+    $group: {
+      _id: null,
+      coolCount: { $sum: { $cond: [{ $gt: ["$votes.cool", 0] }, 1, 0] } },
+      funnyCount: { $sum: { $cond: [{ $gt: ["$votes.funny", 0] }, 1, 0] } },
+      usefulCount: { $sum: { $cond: [{ $gt: ["$votes.useful", 0] }, 1, 0] } }
+    },
+    
+  },
+  {
+    $project: {
+      _id: 0      
+    },
+  }
+])
+```
+![](./img2/task1_zad3.png)
+```js
+//zadanie 4
+db.user.find({$and: [{"votes.funny": 0}, {"votes.useful":0}]}).sort({name:1})
+```
+![](./img2/task1_zad4.png)
+```js
+//zadanie 5 a)
+db.review.aggregate([
+  {
+    $project:{
+      business_id: 1,
+      stars: 1
+    }
+  },
+  {
+    $group:{
+      _id: "$business_id",
+      average: {$avg: "$stars"}
+    }
+  },
+  {
+    $match: {
+      average: {$gt: 3}
+    }
+  },
+  {
+    $sort: {
+      _id: 1
+    }
+  }
+])
+//zadanie 5 b)
+db.review.aggregate([
+  {
+    $project:{
+      business_id: 1,
+      stars: 1
+    }
+  },
+  {
+    $group:{
+      _id: "$business_id",
+      average: {$avg: "$stars"}
+    }
+  },
+  {
+    $match: {
+      average: {$gt: 3}
+    }
+  },
+  {
+    $lookup: {
+      from: "business",
+      localField: "_id",
+      foreignField: "business_id",
+      as: "business"
+    }
+  },
+  {
+    $unwind: "$business"
+  },
+  {
+    $project: {
+      average: 1,
+      name: "$business.name",
+      _id: 0
+    }
+  }
+])
+```
+![](./img2/task1_zad5a.png)
+![](./img2/task1_zad5b.png)
+
 
 # Zadanie 2 - modelowanie danych
 

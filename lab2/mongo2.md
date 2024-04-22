@@ -52,48 +52,41 @@ db.business.find( { categories : "Restaurants", "hours.Monday": {$exists: true},
 .sort({name: 1})
 ```
 ![](./img2/task1_zad1.png)
-**count aby lepiej zweryfikować poprawność zapytania**
 ```js
 //zadanie 2
-DOESNT WORK :((
-[
-  { 
-    $project: {
-      business_id: 1,
-      name: 1
-  	}    
-  },
+db.tips.aggregate([
   {
-    $lookup: {
-      from: "tip",
-      localField: "business_id",
-      foreignField: "business_id",
-      as: "tip"
+    $match:{
+      date: { $gte: "2012-01-01", "$lt": "2013-01-01" }
     }
   },
   {
-    $unwind: "$tip"
-  },
+    $out: "tips2012"
+  }
+])
+
+db.business.aggregate([
   {
-    $match: {
-      "tip.date": { "$gte": "2012-01-01", "$lt": "2013-01-01" }
+    $lookup: {
+      from: "tips2012",
+      localField: "business_id",
+      foreignField: "business_id",
+      as: "tips"
     }
   },
   {
     $project:{
-      name: 1, 
-    }
-  },
-  {
-    $group:{
-      _id: "$name",
-     "count": { "$sum": 1 }
-
+      name: 1,
+      count: {$size: "$tips"},
+      _id: 0
     }
   }
-]
+])
+
+
 ```
-![](./img2/task1_zad2.png)
+![](./img2/task1_zad2_1.png)
+![](./img2/task1_zad2_2.png)
 ```js
 //zadanie 3
 db.review.aggregate([
@@ -103,8 +96,7 @@ db.review.aggregate([
       coolCount: { $sum: { $cond: [{ $gt: ["$votes.cool", 0] }, 1, 0] } },
       funnyCount: { $sum: { $cond: [{ $gt: ["$votes.funny", 0] }, 1, 0] } },
       usefulCount: { $sum: { $cond: [{ $gt: ["$votes.useful", 0] }, 1, 0] } }
-    },
-    
+    },    
   },
   {
     $project: {
@@ -227,7 +219,7 @@ Wybraliśmy zagadnienie A
 Kolekcje:
 1. lecturers
 - wykładowcy prowadzą ćwiczenia/wykłady
-- kady dokument reprezentuje jednego wykładowcę
+- każdy dokument reprezentuje jednego wykładowcę
 Schemat:
 ```json
 {
@@ -243,7 +235,7 @@ Schemat:
 
 2. students
 - studenci mogą uczęszczać na zajęcia/wykłady
-- kazdy dokumenty reprezentuje jednego studenta
+- każdy dokumenty reprezentuje jednego studenta
 
 ```json
 {
@@ -258,7 +250,7 @@ Schemat:
 
 3. courses
 - na studia mogą zapisywać się studenci
-- kazdy dokument reprezentuje pojedynczy kierunek studiów
+- każdy dokument reprezentuje pojedynczy kierunek studiów
 ```json
 {
   "_id": ObjectId,          
@@ -269,7 +261,7 @@ Schemat:
 ```
 
 4. departments
-- wydzialy studiów
+- wydziały studiów
 
 ```json
 {
@@ -322,7 +314,7 @@ Schemat:
 ```
 
 9. classSerieRatings
-- kazdy dokument reprezentuje pojedynczą ocenę zajęć na danym semestrze, którą wystawia student
+- każdy dokument reprezentuje pojedynczą ocenę zajęć na danym semestrze, którą wystawia student
 ```json
 {
   "_id": ObjectId,
@@ -333,7 +325,7 @@ Schemat:
 ```
 
 10. studentGrades
-- kazdy dokument reprezentuje pojedynczą ocenę z przedmiotu, którą otrzymuje student
+- każdy dokument reprezentuje pojedynczą ocenę z przedmiotu, którą otrzymuje student
 
 ```json
 {

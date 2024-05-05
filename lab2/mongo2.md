@@ -212,20 +212,20 @@ Do sprawozdania należy kompletny zrzut wykonanych/przygotowanych baz danych (ta
 
 
 ## Zadanie 2  - rozwiązanie
-Wybraliśmy zagadnienie A
+#### Wybraliśmy zagadnienie A
 
 ### Dekompozycja
 
 ##### Zalety:
 - Unikanie duplikacji danych: Każdy element danych jest przechowywany tylko raz, co minimalizuje redundancję.
-- Łatwość aktualizacji: Aktualizacje danych są prostsze, ponieważ zmiany wprowadza się w jednym miejscu.
-- Skalowalność: Lepsze zarządzanie dużymi ilościami danych dzięki oddzielnym kolekcjom.
+- Łatwiejsze zarządzanie dużymi zbiorami danych.
+- Skalowalność: Lepsze zarządzanie dużymi ilościami danych dzięki rozproszeniu.
 ##### Wady:
 - Złożoność zapytań: Zapytania mogą stać się bardziej złożone i mniej wydajne, gdyż wymagają łączenia danych z wielu kolekcji.
 - Wyższy koszt zapytań: Złożone operacje "join" mogą być kosztowne w terminach wydajności, szczególnie w rozproszonych bazach danych.
 
 Kolekcje:
-1. lecturers
+1. `lecturers`
 - wykładowcy prowadzą ćwiczenia/wykłady
 - każdy dokument reprezentuje jednego wykładowcę
 Schemat:
@@ -241,7 +241,7 @@ Schemat:
 }
 ```
 
-2. students
+2. `students`
 - studenci mogą uczęszczać na zajęcia/wykłady
 - każdy dokumenty reprezentuje jednego studenta
 
@@ -256,7 +256,7 @@ Schemat:
 }
 ```
 
-3. courses
+3. `courses`
 - na studia mogą zapisywać się studenci
 - każdy dokument reprezentuje pojedynczy kierunek studiów
 ```json
@@ -268,7 +268,7 @@ Schemat:
 }
 ```
 
-4. departments
+4. `departments`
 - wydziały studiów
 
 ```json
@@ -279,7 +279,7 @@ Schemat:
 }
 ```
 
-5. semesters
+5. `semesters`
 ```json
 {
   "_id": ObjectId,          
@@ -290,7 +290,7 @@ Schemat:
 }
 ```
 
-6. subjects
+6. `subjects`
 ```json
 {
   "_id": ObjectId,
@@ -300,7 +300,7 @@ Schemat:
 }
 ```
 
-7. classSeries
+7. `classSeries`
 - kazdy dokument reprezentuje przedmiot na danym semestrze
 ```json
 {
@@ -310,7 +310,7 @@ Schemat:
   "lecturerId": ObjectId
 }
 ```
-8. classes
+8. `classes`
 ```json
 {
   "_id": ObjectId,          
@@ -322,7 +322,7 @@ Schemat:
 }
 ```
 
-9. classSerieRatings
+9. `classSerieRatings`
 - każdy dokument reprezentuje pojedynczą ocenę zajęć na danym semestrze, którą wystawia student
 ```json
 {
@@ -333,7 +333,7 @@ Schemat:
 }
 ```
 
-10. studentGrades
+10. `studentGrades`
 - każdy dokument reprezentuje pojedynczą ocenę z przedmiotu, którą otrzymuje student
 
 ```json
@@ -342,6 +342,16 @@ Schemat:
   "grade": Int32,
   "studentId": ObjectId,
   "classSerieId": ObjectId
+}
+```
+
+11. `classPresence`
+- każdy dokument reprezentuje pojedynczą obecność studenta z `studentId` na zajęciach z `classId`
+```json
+{
+  "_id": ObjectId,
+  "classId": Object32,
+  "studentId": Object32
 }
 ```
 
@@ -400,28 +410,24 @@ db.courses.insertMany([
 ```js
 db.semesters.insertMany([
     {
-        "_id": ObjectId(),
         "semesterNumber": 1,
         "startDate": new Date("2023-10-01T00:00:00Z"),
         "endDate": new Date("2024-02-28T00:00:00Z"),
         "courseId": ObjectId("6634d5922a42adfe4ecf7442")
     },
     {
-        "_id": ObjectId(),
         "semesterNumber": 2,
         "startDate": new Date("2024-03-01T00:00:00Z"),
         "endDate": new Date("2024-07-31T00:00:00Z"),
         "courseId": ObjectId("6634d5922a42adfe4ecf7442")
     },
     {
-        "_id": ObjectId(),
         "semesterNumber": 1,
         "startDate": new Date("2023-10-01T00:00:00Z"),
         "endDate": new Date("2024-02-28T00:00:00Z"),
         "courseId": ObjectId("6634d5922a42adfe4ecf7443")
     },
     {
-        "_id": ObjectId(),
         "semesterNumber": 2,
         "startDate": new Date("2024-03-01T00:00:00Z"),
         "endDate": new Date("2024-07-31T00:00:00Z"),
@@ -640,20 +646,6 @@ db.students.insertMany([
         "email": "maciej.makowski@student.agh.edu.pl",
         "birthDate": new Date("1998-06-21T00:00:00Z"),
         "courseIds": [ObjectId("6634d5922a42adfe4ecf7442")]
-    },
-    {
-        "firstname": "Tomasz",
-        "lastname": "Kowalski",
-        "email": "tomasz.kowalski@student.agh.edu.pl",
-        "birthDate": new Date("1997-08-15T00:00:00Z"),
-        "courseIds": [ObjectId("6634d5922a42adfe4ecf7443")]
-    },
-    {
-        "firstname": "Piotr",
-        "lastname": "Dudek",
-        "email": "piotr.dudek@student.agh.edu.pl",
-        "birthDate": new Date("1996-10-03T00:00:00Z"),
-        "courseIds": [ObjectId("6634d5922a42adfe4ecf7443")]
     }
 ]);
 
@@ -664,9 +656,7 @@ db.students.insertMany([
   acknowledged: true,
   insertedIds: {
     '0': ObjectId('6634eb422a42adfe4ecf745b'),
-    '1': ObjectId('6634eb422a42adfe4ecf745c'),
-    '2': ObjectId('6634eb422a42adfe4ecf745d'),
-    '3': ObjectId('6634eb422a42adfe4ecf745e')
+    '1': ObjectId('6634eb422a42adfe4ecf745c')
   }
 }
 ```
@@ -840,34 +830,25 @@ db.classSerieRatings.insertMany([
 db.studentGrades.insertMany([
     {
         "grade": 4,
-        "studentId": ObjectId("63f3cfe2a42adfe4ecf7b400"), // Franciszek Job
+        "studentId": ObjectId("6634eb422a42adfe4ecf745b"), // Franciszek Job
         "classSerieId": ObjectId("6634e5462a42adfe4ecf744a") // Algebra
     },
     {
         "grade": 3,
-        "studentId": ObjectId("63f3cfe2a42adfe4ecf7b401"), // Maciej Makowski
+        "studentId": ObjectId("6634eb422a42adfe4ecf745b"), // Franciszek Job
         "classSerieId": ObjectId("6634e5462a42adfe4ecf744b") // Analiza matematyczna 1
     },
     {
-        "grade": 5,
-        "studentId": ObjectId("63f3cfe2a42adfe4ecf7b402"), // Tomasz Kowalski
-        "classSerieId": ObjectId("6634e5462a42adfe4ecf744c") // Matematyka dyskretna
-    },
-    {
         "grade": 4,
-        "studentId": ObjectId("63f3cfe2a42adfe4ecf7b403"), // Piotr Dudek
-        "classSerieId": ObjectId("6634e5462a42adfe4ecf744d") // Analiza matematyczna 2
+        "studentId": ObjectId("6634eb422a42adfe4ecf745c"), // Maciej Makowski
+        "classSerieId": ObjectId("6634e5462a42adfe4ecf744a") // Algebra
     },
     {
         "grade": 3,
-        "studentId": ObjectId("63f3cfe2a42adfe4ecf7b404"), // Przykładowy Student 1
-        "classSerieId": ObjectId("6634e5462a42adfe4ecf744e") // Logika matematyczna
+        "studentId": ObjectId("6634eb422a42adfe4ecf745c"), // Maciej Makowski
+        "classSerieId": ObjectId("6634e5462a42adfe4ecf744b") // Analiza matematyczna 1
     },
-    {
-        "grade": 4,
-        "studentId": ObjectId("63f3cfe2a42adfe4ecf7b405"), // Przykładowy Student 2
-        "classSerieId": ObjectId("6634e5462a42adfe4ecf744f") // Algorytmy i struktury danych
-    }
+    ...
 ]);
 
 ```
@@ -876,101 +857,416 @@ db.studentGrades.insertMany([
 {
   acknowledged: true,
   insertedIds: {
-    '0': ObjectId('663505082a42adfe4ecf74e7'),
-    '1': ObjectId('663505082a42adfe4ecf74e8'),
-    '2': ObjectId('663505082a42adfe4ecf74e9'),
-    '3': ObjectId('663505082a42adfe4ecf74ea'),
-    '4': ObjectId('663505082a42adfe4ecf74eb'),
-    '5': ObjectId('663505082a42adfe4ecf74ec')
+    '0': ObjectId('66350f502a42adfe4ecf74ed'),
+    '1': ObjectId('66350f502a42adfe4ecf74ee'),
+    '2': ObjectId('66350f502a42adfe4ecf74ef'),
+    '3': ObjectId('66350f502a42adfe4ecf74f0'),
+    ...
   }
 }
 ```
 
-#### Zapytanie 1: Pobranie wszystkich studentów wraz z ich ocenami z konkretnego przedmiotu
+```js
+// Pobierz studentów o nazwiskach "Makowski" i "Job"
+const students = db.students.find({ lastname: { $in: ["Makowski", "Job"] } }).toArray();
+
+// Pobierz wszystkie możliwe zajęcia
+const classes = db.classes.find().toArray();
+
+// Przygotuj tablicę zadań BulkWrite
+const bulkOps = [];
+
+// Pętla dla każdego studenta
+for (let i = 0; i < students.length; i++) {
+    const studentId = students[i]._id;
+
+    // Pętla dla każdego zajęcia
+    for (let j = 0; j < classes.length; j++) {
+        const classId = classes[j]._id;
+
+        // Dodaj zadanie BulkWrite dla każdego studenta na danym zajęciu
+        bulkOps.push({
+            insertOne: {
+                document: {
+                    classId: classId,
+                    studentId: studentId
+                }
+            }
+        });
+    }
+}
+
+// Wykonaj operację BulkWrite
+db.classPresence.bulkWrite(bulkOps);
+
+```
+
+
+#### Zapytanie 1: Pobranie wszystkich studentów wraz z ich ocenami
+
 
 ```js
 db.students.aggregate([
-    {
-        $lookup: {
-            from: "studentGrades",
-            localField: "_id",
-            foreignField: "studentId",
-            as: "grades"
-        }
-    },
-    {
-        $unwind: "$grades"
-    },
-    {
-        $match: {
-            "grades.classSerieId": ObjectId("6634e5462a42adfe4ecf744b") // Przedmiot: Analiza matematyczna 1
-        }
-    },
-    {
-        $project: {
-            "_id": 1,
-            "firstname": 1,
-            "lastname": 1,
-            "email": 1,
-            "grade": "$grades.grade"
-        }
+  {
+    $lookup: {
+      from: "studentGrades",
+      localField: "_id",
+      foreignField: "studentId",
+      as: "grades"
     }
+  },
+  {
+    $project: {
+      firstname: 1,
+      lastname: 1,
+      email: 1,
+      grades: "$grades.grade"
+    }
+  }
 ])
+```
+
+#### Rezultat
+```js
+{
+  _id: ObjectId('6634eb422a42adfe4ecf745b'),
+  firstname: 'Franciszek',
+  lastname: 'Job',
+  email: 'franciszek.job@student.agh.edu.pl',
+  grades: [
+    4,
+    3,
+    5,
+    3,
+    4,
+    4,
+    5,
+    3,
+    4,
+    5,
+    3
+  ]
+}
+... // dalej analogicznie
+```
+
+#### Zapytanie 2: Pobranie średniej kazdego ucznia na kazdy semestr (przydatne podczas rozdzielania stypendium)
+```js
+db.students.aggregate([
+  {
+    $lookup: {
+      from: "studentGrades",
+      localField: "_id",
+      foreignField: "studentId",
+      as: "grades"
+    }
+  },
+  {
+    $unwind: "$grades"
+  },
+  {
+    $lookup: {
+      from: "classSeries",
+      localField: "grades.classSerieId",
+      foreignField: "_id",
+      as: "classSeries"
+    }
+  },
+  {
+    $unwind: "$classSeries"
+  },
+  {
+    $lookup: {
+      from: "semesters",
+      localField: "classSeries.semesterId",
+      foreignField: "_id",
+      as: "semester"
+    }
+  },
+  {
+    $unwind: "$semester"
+  },
+  {
+    $group: {
+      _id: {
+        studentId: "$_id",
+        semesterId: "$semester._id"
+      },
+      averageGrade: { $avg: "$grades.grade" }
+    }
+  },
+  {
+    $lookup: {
+      from: "students",
+      localField: "_id.studentId",
+      foreignField: "_id",
+      as: "student"
+    }
+  },
+  {
+    $unwind: "$student"
+  },
+  {
+    $lookup: {
+      from: "semesters",
+      localField: "_id.semesterId",
+      foreignField: "_id",
+      as: "semester"
+    }
+  },
+  {
+    $unwind: "$semester"
+  },
+  {
+    $project: {
+      _id: 0,
+      semesterNumber: "$semester.semesterNumber",
+      student: {
+        firstname: "$student.firstname",
+        lastname: "$student.lastname"
+      },
+      averageGrade: 1
+    }
+  }
+])
+```
+#### Rezultat
+```js
+{
+  averageGrade: 4.25,
+  student: {
+    firstname: 'Franciszek',
+    lastname: 'Job'
+  },
+  semesterNumber: 2
+}
+{
+  averageGrade: 4,
+  student: {
+    firstname: 'Maciej',
+    lastname: 'Makowski'
+  },
+  semesterNumber: 2
+}
+...
+```
+
+#### Zapytanie 3: Pobranie listy kierunków studiów wraz z liczbą na nich studjujących
+```js
+db.students.aggregate([
+  {
+    $unwind: "$courseIds"
+  },
+  {
+    $group: {
+      _id: "$courseIds",
+      totalStudents: { $sum: 1 }
+    }
+  },
+  {
+    $lookup: {
+      from: "courses",
+      localField: "_id",
+      foreignField: "_id",
+      as: "course"
+    }
+  },
+  {
+    $project: {
+      _id: 1,
+
+      totalStudents: 1
+    }
+  }
+])
+```
+
+#### Rezultat
+```js
+{
+  // matematyka
+  _id: ObjectId('6634d5922a42adfe4ecf7443'),
+  totalStudents: 2
+}
+{
+  // informatyka
+  _id: ObjectId('6634d5922a42adfe4ecf7442'),
+  totalStudents: 2
+}
+```
+
+#### Operacja 1: Dodanie nowych zajęć dla informatyki na 1 semestrze z przedmiotu algebra
+```json
+db.classes.insertOne({
+  "startDate": new Date("2024-09-01T08:00:00Z"),
+  "endDate": new Date("2024-09-01T09:30:00Z"),
+  "classSeriesId": "6634f17b2a42adfe4ecf74a1", // Algebra na 1 semestrze informatyki
+});
+```
+
+#### Rezultat
+```json
+{
+  acknowledged: true,
+  insertedId: ObjectId('6637fc2019378c8e1ea05707')
+}
+```
+
+#### Operacja 2: Dodanie obecności na zajęciach dla informatyki na 1 semestrze z przedmiotu algebra dla studenta z id 6634eb422a42adfe4ecf745b
+```json
+db.classPresence.insertOne({
+  "classId": ObjectId("6637fc2019378c8e1ea05707"),
+  "studentId": ObjectId("6634eb422a42adfe4ecf745b")
+});
+```
+
+#### Rezultat
+```json
+{
+  acknowledged: true,
+  insertedId: ObjectId('6637fd8519378c8e1ea05708')
+}
 ```
 
 
 
 ### Zagnieżdzanie
-
 ##### Zalety:
-- Wydajność zapytań: Ogranicza potrzebę wykonywania złączeń, co może znacząco zwiększyć wydajność zapytań.
+- Wydajność zapytań: Zapytania są szybkie bo wszystkie dane są zapisane w jednym dokumencie.
 - Prostota modelu: Model danych jest często prostszy i bardziej zrozumiały, gdy wszystkie powiązane dane są zapisane razem.
-- Szybsze odczyty: Odczytywanie jednego dużego dokumentu może być szybsze niż łączenie danych z wielu kolekcji.
 ##### Wady:
 - Potencjalna redundancja: Może dochodzić do duplikacji danych, jeśli te same informacje są powielane w różnych dokumentach.
-- Trudności w aktualizacjach: Aktualizacja zduplikowanych danych może być problematyczna i ryzykowna.
+- Trudności w aktualizacjach jeśli wiele osób jednocześnie aktualizuje dane.
 - Ograniczenia rozmiaru dokumentu: MongoDB ma ograniczenie wielkości dokumentu, co może być problemem przy bardzo dużych zagnieżdżonych strukturach.
 
 Kolekcje:
 
-1. departments
+
+`students`
 ```json
 {
   "_id": ObjectId,
-  "name": String,
-  "description": String,
+  "firstname": String,
+  "lastname": String,
+  "email": String,
+  "birthDate": Date,
   "courses": [
     {
-      "_id": ObjectId,
       "name": String,
       "description": String,
+      "department":
+      {
+        "_id": ObjectId,          
+        "name": String,              
+        "description": String,
+      },
       "semesters": [
         {
-          "semesterNumber": Int32,
-          "startDate": Date,
-          "endDate": Date,
           "subjects": [
             {
-              "_id": ObjectId,
               "name": String,
               "description": String,
-              "ECTSPoints": Int32,
-              "classSeries": [
-                {
-                  "_id": ObjectId,
+              "ECTSPoints": String,
+
                   "lecturer": {
-                    "_id": ObjectId,
                     "firstname": String,
                     "lastname": String,
-                    "email": String,
-                    "birthDate": Date
+                    "email": String
                   },
+                  "rating": Int32,
+                  "grades": [Int32],
                   "classes": [
                     {
                       "startDate": Date,
-                      "endDate": Date
+                      "endDate": Date,
+                      "present": true
+                    },
+                    {
+                      "startDate": Date,
+                      "endDate": Date,
+                      "present": false
                     }
                   ]
+            }
+          ],
+          "semesterNumber": Int32,
+          "startDate": Date,
+          "endDate": Date
+        }
+      ]
+    }
+  ]
+}
+
+```
+
+
+Przykładowy dokument
+```json
+{
+  "firstname": "Franciszek",
+  "lastname": "Job",
+  "email": "franciszek.job@student.agh.edu.pl",
+  "birthDate": ISODate("1998-03-21"),
+  "courses": [
+    {
+      "name": "Matematyka",
+      "description": "Kierunek matematyczny",
+      "department": {
+        "name": "Matematyka",
+        "description": "Wydział matematyczny"
+      },
+      "semesters": [
+        {
+          "semesterNumber": 1,
+          "startDate": ISODate("2022-10-01"),
+          "endDate": ISODate("2023-02-28"),
+          "subjects": [
+            {
+              "name": "Analiza matematyczna",
+              "description": "Podstawy analizy matematycznej",
+              "ECTSPoints": "6",
+              "lecturer": {
+                "firstname": "Wacław",
+                "lastname": "Frydrych",
+                "email": "waclaw.frydrych@agh.edu.pl"
+              },
+              "rating": 5,
+              "grades": [5, 4, 5, 5],
+              "classes": [
+                {
+                  "startDate": ISODate("2022-10-01T08:00:00Z"),
+                  "endDate": ISODate("2022-10-01T09:30:00Z"),
+                  "present": true
+                },
+                {
+                  "startDate": ISODate("2022-10-08T08:00:00Z"),
+                  "endDate": ISODate("2022-10-08T09:30:00Z"),
+                  "present": false
+                }
+              ]
+            },
+            {
+              "name": "Algebra",
+              "description": "",
+              "ECTSPoints": "5",
+              "lecturer": {
+                "firstname": "Lech",
+                "lastname": "Adamus",
+                "email": "lech.adamus@agh.edu.pl"
+              },
+              "rating": 4,
+              "grades": [3,3,4],
+              "classes": [
+                {
+                  "startDate": ISODate("2022-11-01T08:00:00Z"),
+                  "endDate": ISODate("2022-11-01T09:30:00Z"),
+                  "present": true
+                },
+                {
+                  "startDate": ISODate("2022-11-08T08:00:00Z"),
+                  "endDate": ISODate("2022-11-08T09:30:00Z"),
+                  "present": false
                 }
               ]
             }
@@ -982,34 +1278,201 @@ Kolekcje:
 }
 ```
 
-2. students
+#### Zapytanie 1: Pobranie wszystkich studentów wraz z ich ocenami
+```json
+db.students.aggregate([
+  {
+    $project: {
+      _id: 1,
+      firstname: 1,
+      lastname: 1,
+      "courses.semesters.subjects.name": 1,
+      "courses.semesters.subjects.classSeries.grades": 1
+    }
+  }
+])
+```
+#### Rezultat
 ```json
 {
-  "_id": ObjectId,
-  "firstname": String,
-  "lastname": String,
-  "email": String,
-  "birthDate": Date,
-  "enrolledCourses": [
+  _id: ObjectId('6637eda219378c8e1ea05703'),
+  firstname: 'Franciszek',
+  lastname: 'Job',
+  courses: [
     {
-      "courseId": ObjectId,
-      "courseName": String,
-      "grades": [
+      semesters: [
         {
-          "classSerieId": ObjectId,
-          "grade": Int32
-        }
-      ],
-      "classSerieRatings": [
-        {
-          "classSerieId": ObjectId,
-          "rating": Int32
+          subjects: [
+            {
+              name: 'Analiza matematyczna',
+              classSeries: [
+                {
+                  grades: [
+                    4,
+                    5,
+                    5
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
   ]
 }
+...
 ```
+
+#### Zapytanie 2: Pobranie średniej studenta na semestr (przydatne podczas rozdzielania stypendium)
+```json
+db.students.aggregate([
+  {
+    $project: {
+      firstname: 1,
+      lastname: 1,
+      "courses.semesters.semesterNumber": 1,
+      "courses.semesters.subjects.grades": 1
+    }
+  },
+  {
+    $unwind: "$courses"
+  },
+  {
+    $unwind: "$courses.semesters"
+  },
+  {
+    $unwind: "$courses.semesters.subjects"
+  },
+  {
+    $group: {
+      _id: {
+        studentId: "$_id",
+        semesterNumber: "$courses.semesters.semesterNumber"
+      },
+      totalGrades: { $sum: { $sum: "$courses.semesters.subjects.grades" } },
+      totalSubjects: { $sum: { $cond: [{ $isArray: "$courses.semesters.subjects.grades" }, { $size: "$courses.semesters.subjects.grades" }, 0] } }
+    }
+  },
+  {
+    $group: {
+      _id: "$_id.studentId",
+      semesters: {
+        $push: {
+          semesterNumber: "$_id.semesterNumber",
+          averageGrade: { $divide: ["$totalGrades", "$totalSubjects"] }
+        }
+      }
+    }
+  },
+  {
+    $lookup: {
+      from: "students",
+      localField: "_id",
+      foreignField: "_id",
+      as: "student"
+    }
+  },
+  {
+    $unwind: "$student"
+  },
+  {
+    $project: {
+      firstname: "$student.firstname",
+      lastname: "$student.lastname",
+      semesters: 1
+    }
+  }
+])
+
+
+```
+#### Rezultat
+```json
+{
+  _id: ObjectId('6637f49019378c8e1ea05705'),
+  semesters: [
+    {
+      semesterNumber: 1,
+      averageGrade: 4.142857142857143
+    }
+  ],
+  firstname: 'Franciszek',
+  lastname: 'Job'
+}
+```
+
+#### Zapytanie 3: Pobranie listy kierunków studiów wraz z liczbą na nich studjujących
+```json
+db.students.aggregate([
+  {
+    $unwind: "$courses"
+  },
+  {
+    $group: {
+      _id: "$courses.name",
+      totalStudents: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      courseName: "$_id",
+      totalStudents: 1,
+      _id: 0
+    }
+  }
+])
+```
+#### Rezultat
+```json
+{
+  totalStudents: 2,
+  courseName: 'Informatyka'
+}
+```
+
+#### Operacja 1: Dodanie nowych zajęć dla informatyki na 1 semestrze z przedmiotu algebra
+```json
+// Data rozpoczęcia i zakończenia zajęć z algebry (np. 1 listopada 2023)
+var startDateAlgebra = new Date("2023-11-01T08:00:00Z");
+var endDateAlgebra = new Date("2023-11-01T09:30:00Z");
+
+// Aktualizacja studentów dodając nowe zajęcia z algebry dla semestru 1 na informatyce
+db.students.updateMany(
+  {
+    "courses.name": "Informatyka", // Szukamy studentów na kierunku Informatyka
+    "courses.semesters.semesterNumber": 1 // W pierwszym semestrze
+  },
+  {
+    $push: {
+      "courses.$[course].semesters.$[semester].subjects.$[subject].classes": {
+        startDate: startDateAlgebra, // Data rozpoczęcia
+        endDate: endDateAlgebra, // Data zakończenia
+        present: false // Początkowo ustawione jako nieobecny
+      }
+    }
+  },
+  {
+    arrayFilters: [
+      { "course.name": "Informatyka" }, // Filtrujemy po nazwie kursu
+      { "semester.semesterNumber": 1 }, // Filtrujemy po numerze semestru
+      { "subject.name": "Algebra" } // Dodajemy zajęcia z przedmiotu Algebra
+    ]
+  }
+)
+```
+
+#### Rezultat
+```json
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 2,
+  modifiedCount: 2,
+  upsertedCount: 0
+}
+```
+
 Punktacja:
 
 |         |     |
